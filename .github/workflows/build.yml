@@ -9,8 +9,8 @@ on:
 
 jobs:
   build-swift-macos:
-    name: Build Swift macOS App
-    runs-on: macos-15-intel
+    name: Build Swift macOS App (Universal)
+    runs-on: macos-latest
     
     steps:
     - name: Checkout code
@@ -24,23 +24,43 @@ jobs:
     - name: Display Swift version
       run: swift --version
       
-    - name: Build for Intel Mac (x86_64)
-      run: swift build -c release --arch x86_64
+    - name: Display architecture
+      run: |
+        echo "Runner architecture: $(uname -m)"
+        echo "Available architectures for compilation: x86_64, arm64"
+        
+    - name: Build Universal Binary (x86_64 + arm64)
+      run: |
+        echo "Building for Intel (x86_64)..."
+        swift build -c release --arch x86_64
+        
+        echo "Building for Apple Silicon (arm64)..."
+        swift build -c release --arch arm64
+        
+        echo "Creating Universal Binary..."
+        mkdir -p .build/universal
+        lipo -create \
+          .build/arm64-apple-macosx/release/PowninAssistant \
+          .build/x86_64-apple-macosx/release/PowninAssistant \
+          -output .build/universal/PowninAssistant
+        
+        echo "Verifying Universal Binary..."
+        lipo -info .build/universal/PowninAssistant
       
     - name: Run tests
       run: |
         if [ -d "Tests" ]; then
-          swift test --arch x86_64
+          swift test
         else
           echo "No Tests directory found, skipping tests"
         fi
       continue-on-error: true
       
-    - name: Archive Swift build
+    - name: Archive Universal build
       uses: actions/upload-artifact@v4
       with:
-        name: PowninAssistant-Swift-Intel
-        path: .build/release/
+        name: PowninAssistant-macOS-Universal
+        path: .build/universal/
         if-no-files-found: warn
 
   build-electron:
@@ -70,7 +90,13 @@ jobs:
       
     - name: Package application
       working-directory: electron-app
-      run: npm run package
+      run: |
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          npm run package:mac-universal
+        else
+          npm run package
+        fi
+      shell: bash
       continue-on-error: true
       
     - name: Archive Electron build
@@ -82,7 +108,7 @@ jobs:
 
   verify-integration:
     name: Verify AI Integration
-    runs-on: macos-15-intel
+    runs-on: macos-latest
     needs: build-swift-macos
     
     steps:

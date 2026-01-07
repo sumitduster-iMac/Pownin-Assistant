@@ -16,8 +16,8 @@ An intelligent cross-platform assistant with AI integration and real-time system
 - **Context-Aware**: Uses real-time system metrics in responses
 
 ### 💻 Cross-Platform
-- **Swift**: Native macOS app optimized for Intel x86_64
-- **Electron**: Cross-platform support for macOS, Windows, Linux
+- **Swift**: Native macOS Universal app (Intel x86_64 + Apple Silicon arm64)
+- **Electron**: Cross-platform support for macOS (Universal), Windows, Linux
 
 ### 🚀 Railway Integration
 - Monitor Railway deployments
@@ -26,10 +26,17 @@ An intelligent cross-platform assistant with AI integration and real-time system
 
 ## Quick Start
 
-### Swift macOS App
+### Swift macOS App (Universal Binary)
 
 ```bash
-swift build -c release --arch x86_64
+# Build Universal binary (Intel + Apple Silicon)
+make build-universal
+
+# Or build for specific architecture
+make build-intel    # Intel only
+make build-arm      # Apple Silicon only
+
+# Run the application
 swift run
 ```
 
@@ -76,14 +83,22 @@ Works without API keys using local AI fallback.
 
 ## Requirements
 
-- **Swift App**: macOS 13.0+, Xcode 14+, Swift 5.9+
-- **Electron App**: Node.js 18+, npm 9+
+- **Swift App**: macOS 13.0+, Xcode 14+, Swift 5.9+ (Universal: Intel & Apple Silicon)
+- **Electron App**: Node.js 18+, npm 9+ (Universal macOS, Windows, Linux)
 
 ## Development
 
-### Build Swift App
+### Build Swift App (Universal)
 ```bash
-swift build -c release --arch x86_64
+# Universal binary (recommended)
+make build-universal
+
+# Individual architectures
+make build-intel      # Intel x86_64
+make build-arm        # Apple Silicon arm64
+
+# Verify universal binary
+make check-arch
 ```
 
 ### Build Electron App

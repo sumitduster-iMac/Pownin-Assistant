@@ -7,7 +7,10 @@
     "start": "electron .",
     "build": "echo 'Build complete'",
     "package": "electron-builder",
-    "package:mac": "electron-builder --mac",
+    "package:mac": "electron-builder --mac --x64 --arm64",
+    "package:mac-universal": "electron-builder --mac --universal",
+    "package:mac-intel": "electron-builder --mac --x64",
+    "package:mac-arm": "electron-builder --mac --arm64",
     "package:win": "electron-builder --win",
     "package:linux": "electron-builder --linux",
     "lint": "echo 'Lint passed'"
@@ -36,7 +39,18 @@
     "mac": {
       "category": "public.app-category.productivity",
       "icon": "assets/icon.icns",
-      "target": ["dmg", "zip"]
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["universal", "x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["universal", "x64", "arm64"]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
     },
     "win": {
       "icon": "assets/icon.ico",
