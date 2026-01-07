@@ -127,6 +127,22 @@ body {
   animation: pulse 1.5s infinite;
 }
 
+.settings-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 5px;
+  margin-left: 10px;
+  opacity: 0.7;
+  transition: all 0.3s;
+}
+
+.settings-btn:hover {
+  opacity: 1;
+  transform: rotate(90deg);
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -622,6 +638,205 @@ body {
 
 .glow-pink {
   text-shadow: 0 0 10px var(--accent-pink);
+}
+
+/* Camera Feed */
+#cameraFeed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.visual-input-area {
+  position: relative;
+  min-height: 150px;
+  overflow: hidden;
+}
+
+.offline-hint {
+  font-size: 9px;
+  color: #333;
+  margin-top: 5px;
+}
+
+/* Speech Indicator */
+.speech-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(255, 149, 0, 0.1);
+  border-top: 1px solid rgba(255, 149, 0, 0.3);
+}
+
+.speech-waves {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+}
+
+.speech-waves span {
+  width: 3px;
+  height: 100%;
+  background: var(--accent-orange);
+  border-radius: 2px;
+  animation: wave 0.5s ease-in-out infinite;
+}
+
+.speech-waves span:nth-child(1) { animation-delay: 0s; }
+.speech-waves span:nth-child(2) { animation-delay: 0.1s; }
+.speech-waves span:nth-child(3) { animation-delay: 0.2s; }
+.speech-waves span:nth-child(4) { animation-delay: 0.3s; }
+.speech-waves span:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(1); }
+}
+
+.speech-text {
+  font-size: 11px;
+  color: var(--accent-orange);
+  letter-spacing: 1px;
+}
+
+/* Settings Modal */
+.settings-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.settings-content {
+  background: var(--bg-secondary);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  overflow: hidden;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-header h3 {
+  font-size: 16px;
+  color: var(--accent-cyan);
+}
+
+.close-settings {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close-settings:hover {
+  color: var(--accent-pink);
+}
+
+.settings-body {
+  padding: 20px;
+}
+
+.setting-group {
+  margin-bottom: 20px;
+}
+
+.setting-group label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.setting-group select,
+.setting-group input {
+  width: 100%;
+  padding: 12px 15px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.setting-group select:focus,
+.setting-group input:focus {
+  border-color: var(--accent-cyan);
+}
+
+.setting-group select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.save-settings-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent-green);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.save-settings-btn:hover {
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+}
+
+/* Active camera button */
+.control-btn.camera-btn.active {
+  background: rgba(0, 212, 255, 0.2);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+/* Typing indicator */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 15px;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-green);
+  border-radius: 50%;
+  animation: typing 1s infinite;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
 }
 
 /* Responsive adjustments */

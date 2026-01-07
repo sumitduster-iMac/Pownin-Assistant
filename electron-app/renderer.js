@@ -10,6 +10,7 @@ class ParticleSystem {
     this.radius = 150;
     this.time = 0;
     this.isActive = true;
+    this.audioLevel = 0;
     
     this.init();
     this.animate();
@@ -34,7 +35,6 @@ class ParticleSystem {
   createParticles() {
     this.particles = [];
     for (let i = 0; i < this.particleCount; i++) {
-      // Create particles in a spherical distribution
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
       const r = this.radius * (0.8 + Math.random() * 0.4);
@@ -54,6 +54,10 @@ class ParticleSystem {
     }
   }
   
+  setAudioLevel(level) {
+    this.audioLevel = level;
+  }
+  
   animate() {
     if (!this.isActive) return;
     
@@ -62,41 +66,34 @@ class ParticleSystem {
     
     this.time += 0.005;
     
-    // Sort particles by z-depth for proper rendering
+    const audioMultiplier = 1 + this.audioLevel * 0.5;
     const sortedParticles = [...this.particles].sort((a, b) => a.z - b.z);
     
     for (const particle of sortedParticles) {
-      // Rotate the particle
-      const rotationSpeed = 0.3;
+      const rotationSpeed = 0.3 + this.audioLevel * 0.2;
       const cosTime = Math.cos(this.time * rotationSpeed);
       const sinTime = Math.sin(this.time * rotationSpeed);
       
-      // Apply rotation around Y axis
       const x = particle.originalX * cosTime - particle.originalZ * sinTime;
       const z = particle.originalX * sinTime + particle.originalZ * cosTime;
       const y = particle.originalY;
       
-      // Add wave effect
-      const wave = Math.sin(this.time * 2 + particle.offset) * 10;
+      const wave = Math.sin(this.time * 2 + particle.offset) * 10 * audioMultiplier;
       
-      // Project 3D to 2D
       const scale = 400 / (400 + z);
       const projectedX = this.centerX + (x + wave * 0.3) * scale;
       const projectedY = this.centerY + (y + wave * 0.3) * scale;
       
-      // Calculate color based on position and time
-      const hue = (this.time * 20 + particle.offset * 30) % 360;
-      const saturation = 20;
+      const hue = (this.time * 20 + particle.offset * 30 + this.audioLevel * 100) % 360;
+      const saturation = 20 + this.audioLevel * 30;
       const lightness = 60 + (z / this.radius) * 20;
       const alpha = (0.3 + scale * 0.5) * particle.brightness;
       
-      // Draw particle
       this.ctx.beginPath();
-      this.ctx.arc(projectedX, projectedY, particle.size * scale, 0, Math.PI * 2);
+      this.ctx.arc(projectedX, projectedY, particle.size * scale * audioMultiplier, 0, Math.PI * 2);
       this.ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
       this.ctx.fill();
       
-      // Add glow effect for some particles
       if (particle.brightness > 0.8) {
         this.ctx.beginPath();
         this.ctx.arc(projectedX, projectedY, particle.size * scale * 2, 0, Math.PI * 2);
@@ -105,12 +102,11 @@ class ParticleSystem {
       }
     }
     
-    // Draw center glow
     const gradient = this.ctx.createRadialGradient(
       this.centerX, this.centerY, 0,
       this.centerX, this.centerY, this.radius * 0.5
     );
-    gradient.addColorStop(0, 'rgba(0, 255, 136, 0.05)');
+    gradient.addColorStop(0, `rgba(0, 255, 136, ${0.05 + this.audioLevel * 0.1})`);
     gradient.addColorStop(0.5, 'rgba(0, 212, 255, 0.02)');
     gradient.addColorStop(1, 'transparent');
     
@@ -138,18 +134,15 @@ class SystemMetrics {
     this.metricsStatus = document.querySelector('.metrics-status');
     
     this.updateMetrics();
-    // Update every 2 seconds for real-time data
     setInterval(() => this.updateMetrics(), 2000);
   }
   
   async updateMetrics() {
     try {
-      // Check if electronAPI is available
       if (typeof window.electronAPI !== 'undefined' && window.electronAPI.getSystemMetrics) {
         const metrics = await window.electronAPI.getSystemMetrics();
         this.displayMetrics(metrics);
       } else {
-        // Fallback for browser testing
         this.displayFallbackMetrics();
       }
     } catch (error) {
@@ -159,12 +152,10 @@ class SystemMetrics {
   }
   
   displayMetrics(metrics) {
-    // Update CPU
     if (this.cpuValue) {
       this.cpuValue.textContent = `${metrics.cpu}%`;
       this.cpuBar.style.width = `${Math.min(metrics.cpu, 100)}%`;
       
-      // Change color based on CPU load
       if (metrics.cpu > 80) {
         this.cpuBar.style.background = 'linear-gradient(90deg, #ff3b3b, #ff6b6b)';
       } else if (metrics.cpu > 50) {
@@ -174,13 +165,11 @@ class SystemMetrics {
       }
     }
     
-    // Update RAM
     if (this.ramValue) {
       this.ramValue.textContent = `${metrics.ram}%`;
       this.ramBar.style.width = `${Math.min(metrics.ram, 100)}%`;
       this.ramDetails.textContent = `${metrics.ramUsed} / ${metrics.ramTotal} GB`;
       
-      // Change color based on RAM usage
       if (metrics.ram > 80) {
         this.ramBar.style.background = 'linear-gradient(90deg, #ff3b3b, #ff6b6b)';
       } else if (metrics.ram > 60) {
@@ -190,7 +179,6 @@ class SystemMetrics {
       }
     }
     
-    // Update processes
     if (this.processesBody && metrics.processes && metrics.processes.length > 0) {
       this.processesBody.innerHTML = metrics.processes.map(p => `
         <tr>
@@ -201,14 +189,12 @@ class SystemMetrics {
       `).join('');
     }
     
-    // Update status indicator
     if (this.metricsStatus) {
       this.metricsStatus.classList.add('online');
     }
   }
   
   displayFallbackMetrics() {
-    // Fallback with simulated data for browser testing
     const cpu = Math.floor(Math.random() * 30 + 10);
     const ram = Math.floor(Math.random() * 40 + 30);
     
@@ -250,14 +236,247 @@ class SystemMetrics {
   }
 }
 
-// Transcript/Chat functionality
+// Camera Manager
+class CameraManager {
+  constructor() {
+    this.video = document.getElementById('cameraFeed');
+    this.offlineDisplay = document.getElementById('videoOffline');
+    this.cameraBtn = document.getElementById('cameraBtn');
+    this.stream = null;
+    this.isActive = false;
+    
+    if (this.cameraBtn) {
+      this.cameraBtn.addEventListener('click', () => this.toggle());
+    }
+  }
+  
+  async toggle() {
+    if (this.isActive) {
+      this.stop();
+    } else {
+      await this.start();
+    }
+  }
+  
+  async start() {
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 320, height: 240, facingMode: 'user' },
+        audio: false
+      });
+      
+      this.video.srcObject = this.stream;
+      this.video.style.display = 'block';
+      this.offlineDisplay.style.display = 'none';
+      this.cameraBtn.classList.add('active');
+      this.isActive = true;
+      
+      console.log('Camera started');
+    } catch (error) {
+      console.error('Camera access denied:', error);
+      alert('Camera access denied. Please allow camera access in your system settings.');
+    }
+  }
+  
+  stop() {
+    if (this.stream) {
+      this.stream.getTracks().forEach(track => track.stop());
+      this.stream = null;
+    }
+    
+    this.video.srcObject = null;
+    this.video.style.display = 'none';
+    this.offlineDisplay.style.display = 'flex';
+    this.cameraBtn.classList.remove('active');
+    this.isActive = false;
+    
+    console.log('Camera stopped');
+  }
+}
+
+// Microphone & Speech Recognition Manager
+class MicrophoneManager {
+  constructor(particleSystem, transcriptManager) {
+    this.micBtn = document.getElementById('micBtn');
+    this.speechIndicator = document.getElementById('speechIndicator');
+    this.particleSystem = particleSystem;
+    this.transcriptManager = transcriptManager;
+    this.isListening = false;
+    this.recognition = null;
+    this.audioContext = null;
+    this.analyser = null;
+    this.microphone = null;
+    
+    this.initSpeechRecognition();
+    
+    if (this.micBtn) {
+      this.micBtn.addEventListener('click', () => this.toggle());
+    }
+  }
+  
+  initSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognition) {
+      this.recognition = new SpeechRecognition();
+      this.recognition.continuous = true;
+      this.recognition.interimResults = true;
+      this.recognition.lang = 'en-US';
+      
+      this.recognition.onresult = (event) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        
+        if (finalTranscript) {
+          this.transcriptManager.addMessage(finalTranscript, 'user');
+          this.transcriptManager.sendToAI(finalTranscript);
+        }
+      };
+      
+      this.recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'not-allowed') {
+          alert('Microphone access denied. Please allow microphone access.');
+        }
+      };
+      
+      this.recognition.onend = () => {
+        if (this.isListening) {
+          // Restart if still supposed to be listening
+          this.recognition.start();
+        }
+      };
+    } else {
+      console.warn('Speech recognition not supported');
+    }
+  }
+  
+  async toggle() {
+    if (this.isListening) {
+      this.stop();
+    } else {
+      await this.start();
+    }
+  }
+  
+  async start() {
+    try {
+      // Start audio visualization
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      this.analyser = this.audioContext.createAnalyser();
+      this.microphone = this.audioContext.createMediaStreamSource(stream);
+      this.microphone.connect(this.analyser);
+      this.analyser.fftSize = 256;
+      
+      this.isListening = true;
+      this.micBtn.classList.add('active');
+      if (this.speechIndicator) {
+        this.speechIndicator.style.display = 'flex';
+      }
+      
+      // Update listening status
+      const listeningStatus = document.querySelector('.status-item.listening');
+      if (listeningStatus) {
+        listeningStatus.style.opacity = '1';
+      }
+      
+      // Start speech recognition
+      if (this.recognition) {
+        this.recognition.start();
+      }
+      
+      // Start audio level monitoring
+      this.monitorAudioLevel();
+      
+      console.log('Microphone started');
+    } catch (error) {
+      console.error('Microphone access denied:', error);
+      alert('Microphone access denied. Please allow microphone access.');
+    }
+  }
+  
+  stop() {
+    this.isListening = false;
+    
+    if (this.recognition) {
+      this.recognition.stop();
+    }
+    
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
+    }
+    
+    this.micBtn.classList.remove('active');
+    if (this.speechIndicator) {
+      this.speechIndicator.style.display = 'none';
+    }
+    
+    // Update listening status
+    const listeningStatus = document.querySelector('.status-item.listening');
+    if (listeningStatus) {
+      listeningStatus.style.opacity = '0.3';
+    }
+    
+    if (this.particleSystem) {
+      this.particleSystem.setAudioLevel(0);
+    }
+    
+    console.log('Microphone stopped');
+  }
+  
+  monitorAudioLevel() {
+    if (!this.isListening || !this.analyser) return;
+    
+    const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+    this.analyser.getByteFrequencyData(dataArray);
+    
+    // Calculate average volume
+    const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+    const normalizedLevel = Math.min(average / 128, 1);
+    
+    // Update particle system with audio level
+    if (this.particleSystem) {
+      this.particleSystem.setAudioLevel(normalizedLevel);
+    }
+    
+    requestAnimationFrame(() => this.monitorAudioLevel());
+  }
+}
+
+// Transcript/Chat Manager with AI Integration
 class TranscriptManager {
   constructor() {
     this.messages = document.getElementById('transcriptMessages');
     this.input = document.getElementById('messageInput');
     this.sendBtn = document.getElementById('sendBtn');
+    this.settings = {
+      provider: 'openai',
+      apiKey: ''
+    };
     
+    this.loadSettings();
     this.setupEventListeners();
+  }
+  
+  async loadSettings() {
+    try {
+      if (typeof window.electronAPI !== 'undefined' && window.electronAPI.loadSettings) {
+        this.settings = await window.electronAPI.loadSettings();
+      }
+    } catch (error) {
+      console.error('Failed to load settings:', error);
+    }
   }
   
   setupEventListeners() {
@@ -281,10 +500,62 @@ class TranscriptManager {
     this.addMessage(text, 'user');
     this.input.value = '';
     
-    // Simulate AI response
-    setTimeout(() => {
-      this.addMessage('Message received! Processing your request...', 'ai');
-    }, 1000);
+    await this.sendToAI(text);
+  }
+  
+  async sendToAI(text) {
+    // Show typing indicator
+    this.showTypingIndicator();
+    
+    try {
+      if (typeof window.electronAPI !== 'undefined' && window.electronAPI.sendAIMessage) {
+        const result = await window.electronAPI.sendAIMessage(
+          text,
+          this.settings.provider,
+          this.settings.apiKey
+        );
+        
+        this.hideTypingIndicator();
+        
+        if (result.success) {
+          this.addMessage(result.response, 'ai');
+        } else {
+          this.addMessage(`Error: ${result.error}`, 'ai');
+        }
+      } else {
+        // Fallback response for browser testing
+        this.hideTypingIndicator();
+        setTimeout(() => {
+          this.addMessage('I received your message! To enable AI responses, please configure your API key in settings.', 'ai');
+        }, 500);
+      }
+    } catch (error) {
+      this.hideTypingIndicator();
+      this.addMessage(`Error: ${error.message}`, 'ai');
+    }
+  }
+  
+  showTypingIndicator() {
+    const indicator = document.createElement('div');
+    indicator.className = 'transcript-message ai typing';
+    indicator.id = 'typingIndicator';
+    indicator.innerHTML = `
+      <span class="message-label">KREO</span>
+      <div class="message-bubble">
+        <div class="typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    `;
+    this.messages.appendChild(indicator);
+    this.messages.scrollTop = this.messages.scrollHeight;
+  }
+  
+  hideTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) {
+      indicator.remove();
+    }
   }
   
   addMessage(text, type) {
@@ -292,88 +563,151 @@ class TranscriptManager {
     messageDiv.className = `transcript-message ${type}`;
     messageDiv.innerHTML = `
       <span class="message-label">${type === 'user' ? 'YOU' : 'KREO'}</span>
-      <div class="message-bubble">${text}</div>
+      <div class="message-bubble">${this.escapeHtml(text)}</div>
     `;
     
     this.messages.appendChild(messageDiv);
     this.messages.scrollTop = this.messages.scrollHeight;
   }
+  
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  
+  updateSettings(settings) {
+    this.settings = { ...this.settings, ...settings };
+  }
 }
 
-// Control Buttons
-class ControlManager {
-  constructor() {
-    this.cameraBtn = document.getElementById('cameraBtn');
-    this.endBtn = document.getElementById('endBtn');
-    this.micBtn = document.getElementById('micBtn');
-    this.isMicActive = true;
-    this.isCameraActive = false;
+// Settings Manager
+class SettingsManager {
+  constructor(transcriptManager) {
+    this.transcriptManager = transcriptManager;
+    this.modal = document.getElementById('settingsModal');
+    this.closeBtn = document.getElementById('closeSettings');
+    this.saveBtn = document.getElementById('saveSettings');
+    this.providerSelect = document.getElementById('aiProvider');
+    this.apiKeyInput = document.getElementById('apiKey');
     
     this.setupEventListeners();
+    this.loadSettings();
   }
   
   setupEventListeners() {
-    if (this.micBtn) {
-      this.micBtn.addEventListener('click', () => this.toggleMic());
+    // Open settings from button
+    const settingsBtn = document.getElementById('settingsBtn');
+    if (settingsBtn) {
+      settingsBtn.addEventListener('click', () => this.open());
     }
     
-    if (this.cameraBtn) {
-      this.cameraBtn.addEventListener('click', () => this.toggleCamera());
+    // Open settings from menu or keyboard shortcut
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === ',') {
+        e.preventDefault();
+        this.open();
+      }
+    });
+    
+    if (this.closeBtn) {
+      this.closeBtn.addEventListener('click', () => this.close());
     }
+    
+    if (this.saveBtn) {
+      this.saveBtn.addEventListener('click', () => this.save());
+    }
+    
+    if (this.modal) {
+      this.modal.addEventListener('click', (e) => {
+        if (e.target === this.modal) {
+          this.close();
+        }
+      });
+    }
+  }
+  
+  async loadSettings() {
+    try {
+      if (typeof window.electronAPI !== 'undefined' && window.electronAPI.loadSettings) {
+        const settings = await window.electronAPI.loadSettings();
+        if (this.providerSelect) {
+          this.providerSelect.value = settings.provider || 'openai';
+        }
+        if (this.apiKeyInput && settings.apiKey) {
+          this.apiKeyInput.value = settings.apiKey;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load settings:', error);
+    }
+  }
+  
+  open() {
+    if (this.modal) {
+      this.modal.style.display = 'flex';
+    }
+  }
+  
+  close() {
+    if (this.modal) {
+      this.modal.style.display = 'none';
+    }
+  }
+  
+  async save() {
+    const settings = {
+      provider: this.providerSelect?.value || 'openai',
+      apiKey: this.apiKeyInput?.value || ''
+    };
+    
+    try {
+      if (typeof window.electronAPI !== 'undefined' && window.electronAPI.saveSettings) {
+        await window.electronAPI.saveSettings(settings);
+      }
+      
+      // Update transcript manager settings
+      if (this.transcriptManager) {
+        this.transcriptManager.updateSettings(settings);
+      }
+      
+      this.close();
+      console.log('Settings saved');
+    } catch (error) {
+      console.error('Failed to save settings:', error);
+    }
+  }
+}
+
+// Control Manager (End button)
+class ControlManager {
+  constructor(cameraManager, micManager) {
+    this.endBtn = document.getElementById('endBtn');
+    this.cameraManager = cameraManager;
+    this.micManager = micManager;
     
     if (this.endBtn) {
       this.endBtn.addEventListener('click', () => this.endSession());
     }
   }
   
-  toggleMic() {
-    this.isMicActive = !this.isMicActive;
-    this.micBtn.classList.toggle('active', this.isMicActive);
-    
-    // Update listening status
-    const listeningStatus = document.querySelector('.status-item.listening');
-    if (listeningStatus) {
-      listeningStatus.style.opacity = this.isMicActive ? '1' : '0.3';
-    }
-  }
-  
-  toggleCamera() {
-    this.isCameraActive = !this.isCameraActive;
-    this.cameraBtn.classList.toggle('active', this.isCameraActive);
-    
-    const visualInput = document.querySelector('.visual-input-area');
-    if (visualInput) {
-      if (this.isCameraActive) {
-        visualInput.innerHTML = `
-          <div class="camera-active">
-            <div class="camera-preview">📷 Camera Active</div>
-          </div>
-        `;
-      } else {
-        visualInput.innerHTML = `
-          <div class="video-feed-offline">
-            <div class="camera-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
-                <line x1="1" y1="1" x2="23" y2="23"/>
-              </svg>
-            </div>
-            <span class="offline-text">VIDEO FEED OFFLINE</span>
-          </div>
-        `;
-      }
-    }
-  }
-  
   endSession() {
-    // Visual feedback for ending session
+    // Stop camera
+    if (this.cameraManager) {
+      this.cameraManager.stop();
+    }
+    
+    // Stop microphone
+    if (this.micManager) {
+      this.micManager.stop();
+    }
+    
+    // Visual feedback
     this.endBtn.style.transform = 'scale(0.95)';
     setTimeout(() => {
       this.endBtn.style.transform = 'scale(1)';
     }, 100);
     
-    // Could implement actual session ending logic here
     console.log('Session ended');
   }
 }
@@ -401,21 +735,38 @@ class NavigationManager {
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize particle system
   const canvas = document.getElementById('particleCanvas');
+  let particleSystem = null;
   if (canvas) {
-    new ParticleSystem(canvas);
+    particleSystem = new ParticleSystem(canvas);
   }
   
   // Initialize system metrics
   new SystemMetrics();
   
   // Initialize transcript manager
-  new TranscriptManager();
+  const transcriptManager = new TranscriptManager();
+  
+  // Initialize camera manager
+  const cameraManager = new CameraManager();
+  
+  // Initialize microphone manager
+  const micManager = new MicrophoneManager(particleSystem, transcriptManager);
+  
+  // Initialize settings manager
+  new SettingsManager(transcriptManager);
   
   // Initialize control manager
-  new ControlManager();
+  new ControlManager(cameraManager, micManager);
   
   // Initialize navigation
   new NavigationManager();
+  
+  // Listen for open-settings event from main process
+  if (typeof window.electronAPI !== 'undefined') {
+    window.electronAPI.onOpenSettings(() => {
+      document.getElementById('settingsModal').style.display = 'flex';
+    });
+  }
   
   console.log('Pownin Assistant Dashboard initialized');
 });

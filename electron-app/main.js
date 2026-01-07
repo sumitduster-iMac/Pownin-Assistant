@@ -142,6 +142,155 @@ ipcMain.handle('send-message', async (event, message) => {
   };
 });
 
+// AI Message handling with real API calls
+ipcMain.handle('send-ai-message', async (event, { message, provider, apiKey }) => {
+  if (!apiKey) {
+    return {
+      success: false,
+      error: 'API key not configured. Click the settings icon to add your API key.',
+      response: null
+    };
+  }
+
+  try {
+    if (provider === 'openai') {
+      return await callOpenAI(message, apiKey);
+    } else if (provider === 'anthropic') {
+      return await callAnthropic(message, apiKey);
+    } else {
+      return { success: false, error: 'Unknown provider', response: null };
+    }
+  } catch (error) {
+    return { success: false, error: error.message, response: null };
+  }
+});
+
+// OpenAI API call
+async function callOpenAI(message, apiKey) {
+  const https = require('https');
+  
+  return new Promise((resolve) => {
+    const data = JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You are KREO, a helpful AI assistant. Be concise and friendly.' },
+        { role: 'user', content: message }
+      ],
+      max_tokens: 1000
+    });
+
+    const options = {
+      hostname: 'api.openai.com',
+      port: 443,
+      path: '/v1/chat/completions',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(body);
+          if (json.error) {
+            resolve({ success: false, error: json.error.message, response: null });
+          } else {
+            resolve({
+              success: true,
+              response: json.choices[0].message.content,
+              error: null
+            });
+          }
+        } catch (e) {
+          resolve({ success: false, error: 'Failed to parse response', response: null });
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      resolve({ success: false, error: e.message, response: null });
+    });
+
+    req.write(data);
+    req.end();
+  });
+}
+
+// Anthropic API call
+async function callAnthropic(message, apiKey) {
+  const https = require('https');
+  
+  return new Promise((resolve) => {
+    const data = JSON.stringify({
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 1000,
+      system: 'You are KREO, a helpful AI assistant. Be concise and friendly.',
+      messages: [
+        { role: 'user', content: message }
+      ]
+    });
+
+    const options = {
+      hostname: 'api.anthropic.com',
+      port: 443,
+      path: '/v1/messages',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(body);
+          if (json.error) {
+            resolve({ success: false, error: json.error.message, response: null });
+          } else {
+            resolve({
+              success: true,
+              response: json.content[0].text,
+              error: null
+            });
+          }
+        } catch (e) {
+          resolve({ success: false, error: 'Failed to parse response', response: null });
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      resolve({ success: false, error: e.message, response: null });
+    });
+
+    req.write(data);
+    req.end();
+  });
+}
+
+// Settings storage
+let appSettings = {
+  provider: 'openai',
+  apiKey: ''
+};
+
+ipcMain.handle('save-settings', async (event, settings) => {
+  appSettings = { ...appSettings, ...settings };
+  return { success: true };
+});
+
+ipcMain.handle('load-settings', async () => {
+  return appSettings;
+});
+
 // CPU usage calculation
 let lastCpuInfo = os.cpus();
 function getCpuUsage() {

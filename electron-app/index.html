@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://api.openai.com https://api.anthropic.com; media-src 'self' blob: mediastream:;">
   <title>Pownin Assistant</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -22,7 +22,8 @@
       <div class="system-status">
         <span class="status-item">◉ SYSTEM READY</span>
         <span class="status-item">◉ NET LINKED</span>
-        <span class="status-item listening">◉ LISTENING</span>
+        <span class="status-item listening" style="opacity: 0.3;">◉ LISTENING</span>
+        <button class="settings-btn" id="settingsBtn" title="Settings (Cmd+,)">⚙️</button>
       </div>
     </nav>
 
@@ -36,8 +37,9 @@
             <span class="section-icon">📹</span>
             <span class="section-title">VISUAL INPUT</span>
           </div>
-          <div class="visual-input-area">
-            <div class="video-feed-offline">
+          <div class="visual-input-area" id="visualInputArea">
+            <video id="cameraFeed" autoplay playsinline muted style="display: none;"></video>
+            <div class="video-feed-offline" id="videoOffline">
               <div class="camera-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -46,6 +48,7 @@
                 </svg>
               </div>
               <span class="offline-text">VIDEO FEED OFFLINE</span>
+              <span class="offline-hint">Click camera button to enable</span>
             </div>
           </div>
         </div>
@@ -122,7 +125,7 @@
             <span class="power-icon">⏻</span>
             <span>END</span>
           </button>
-          <button class="control-btn mic-btn active" id="micBtn">
+          <button class="control-btn mic-btn" id="micBtn">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
               <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
@@ -142,39 +145,15 @@
             <div class="transcript-message ai">
               <span class="message-label">KREO</span>
               <div class="message-bubble">
-                Pownin's ka main focus fast image generation par hai, jaise Flux model wagera. Image recognition ke liye unke paas alag ye dedicated models currently nahi hain. Toh hum native models se hi image recognition ka kaam zyada ache se kar sakte hain.
+                Hello! I'm KREO, your AI assistant. You can type a message or click the microphone to speak. How can I help you today?
               </div>
             </div>
-            <div class="transcript-message user">
-              <span class="message-label">YOU</span>
-              <div class="message-bubble">
-                Okay just check out what I am holding currently in my hand.
-              </div>
+          </div>
+          <div class="speech-indicator" id="speechIndicator" style="display: none;">
+            <div class="speech-waves">
+              <span></span><span></span><span></span><span></span><span></span>
             </div>
-            <div class="transcript-message ai">
-              <span class="message-label">KREO</span>
-              <div class="message-bubble">
-                Bhai can't see it bro. Maybe thoda aur clearly dikha do? Ya phir bata do kya hai.
-              </div>
-            </div>
-            <div class="transcript-message user">
-              <span class="message-label">YOU</span>
-              <div class="message-bubble">
-                &lt;endosp&gt; Okay, aur hume ek aur chezz add kar dena ki agar sha banana hai to miske comment karo slap coding. &lt;endosp&gt;
-              </div>
-            </div>
-            <div class="transcript-message ai">
-              <span class="message-label">KREO</span>
-              <div class="message-bubble">
-                Pakka! Yeh wali line add kar donga. Ready bro?
-              </div>
-            </div>
-            <div class="transcript-message user">
-              <span class="message-label">YOU</span>
-              <div class="message-bubble">
-                &lt;endosp&gt; ahi fibi ya dhod airess |
-              </div>
-            </div>
+            <span class="speech-text">Listening...</span>
           </div>
           <div class="transcript-input">
             <input type="text" id="messageInput" placeholder="Type your message...">
@@ -186,6 +165,30 @@
           </div>
         </div>
       </aside>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settingsModal" style="display: none;">
+      <div class="settings-content">
+        <div class="settings-header">
+          <h3>⚙️ AI Settings</h3>
+          <button class="close-settings" id="closeSettings">✕</button>
+        </div>
+        <div class="settings-body">
+          <div class="setting-group">
+            <label>AI Provider</label>
+            <select id="aiProvider">
+              <option value="openai">OpenAI (GPT-4)</option>
+              <option value="anthropic">Anthropic (Claude)</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label>API Key</label>
+            <input type="password" id="apiKey" placeholder="Enter your API key...">
+          </div>
+          <button class="save-settings-btn" id="saveSettings">Save Settings</button>
+        </div>
+      </div>
     </div>
 
     <!-- Footer -->
