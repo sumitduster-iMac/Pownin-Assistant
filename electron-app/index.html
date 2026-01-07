@@ -3,103 +3,221 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';">
   <title>Pownin Assistant</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app-container">
-    <!-- Title Bar -->
-    <div class="title-bar">
-      <div class="title-bar-drag-region"></div>
-      <div class="title-bar-content">
-        <div class="app-icon">🤖</div>
-        <span class="app-title">Pownin Assistant</span>
+    <!-- Top Navigation Bar -->
+    <nav class="top-nav">
+      <div class="nav-tabs">
+        <button class="nav-tab active">DASHBOARD</button>
+        <button class="nav-tab">CONTACTS</button>
+        <button class="nav-tab">NOTES</button>
+        <button class="nav-tab">CONNECT</button>
+        <button class="nav-tab">PHONE <span class="phone-indicator"></span></button>
+        <span class="online-status">● ONLINE</span>
       </div>
-      <div class="system-info">
-        <span class="status-indicator active"></span>
-        <span class="status-text">AI Active</span>
+      <div class="system-status">
+        <span class="status-item">◉ SYSTEM READY</span>
+        <span class="status-item">◉ NET LINKED</span>
+        <span class="status-item listening">◉ LISTENING</span>
       </div>
-    </div>
+    </nav>
 
     <!-- Main Content -->
     <div class="main-content">
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="sidebar-header">
-          <h3>Conversations</h3>
-          <button class="new-chat-btn" id="newChatBtn">+ New Chat</button>
+      <!-- Left Panel -->
+      <aside class="left-panel">
+        <!-- Visual Input Section -->
+        <div class="panel-section">
+          <div class="section-header">
+            <span class="section-icon">📹</span>
+            <span class="section-title">VISUAL INPUT</span>
+          </div>
+          <div class="visual-input-area">
+            <div class="video-feed-offline">
+              <div class="camera-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </div>
+              <span class="offline-text">VIDEO FEED OFFLINE</span>
+            </div>
+          </div>
         </div>
-        <div class="conversation-list" id="conversationList">
-          <div class="conversation-item active">
-            <span class="conversation-icon">💬</span>
-            <span class="conversation-title">Current Chat</span>
+
+        <!-- System Metrics Section -->
+        <div class="panel-section">
+          <div class="section-header">
+            <span class="section-icon">📊</span>
+            <span class="section-title">SYSTEM METRICS</span>
+            <span class="metrics-status online">● ONLINE</span>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-icon cpu-icon">⚡</div>
+              <div class="metric-value" id="cpuValue">15%</div>
+              <div class="metric-label">CPU LOAD</div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill cpu-bar" id="cpuBar" style="width: 15%"></div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon ram-icon">💾</div>
+              <div class="metric-value" id="ramValue">13%</div>
+              <div class="metric-label">RAM USAGE</div>
+              <div class="metric-sublabel" id="ramDetails">3.6 GB</div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ram-bar" id="ramBar" style="width: 13%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Processes -->
+          <div class="processes-section">
+            <div class="processes-header">
+              <span class="section-icon">⚙️</span>
+              <span>TOP PROCESSES</span>
+            </div>
+            <table class="processes-table">
+              <thead>
+                <tr>
+                  <th>APP NAME</th>
+                  <th>CPU</th>
+                  <th>MEM</th>
+                </tr>
+              </thead>
+              <tbody id="processesBody">
+                <tr>
+                  <td>WindowServer</td>
+                  <td class="cpu-cell">40.5%</td>
+                  <td>0.6%</td>
+                </tr>
+                <tr>
+                  <td>Eres Helper (GPU)</td>
+                  <td class="cpu-cell">33.4%</td>
+                  <td>1.3%</td>
+                </tr>
+                <tr>
+                  <td>Eres Helper (Renderer)</td>
+                  <td class="cpu-cell">19.5%</td>
+                  <td>1.8%</td>
+                </tr>
+                <tr>
+                  <td>coreaudiod</td>
+                  <td class="cpu-cell">12.9%</td>
+                  <td>0.7%</td>
+                </tr>
+                <tr>
+                  <td>corespotd</td>
+                  <td class="cpu-cell">6.0%</td>
+                  <td>0.2%</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </aside>
 
-      <!-- Chat Area -->
-      <main class="chat-area">
-        <div class="messages-container" id="messagesContainer">
-          <div class="welcome-message">
-            <h2>Welcome to Pownin Assistant</h2>
-            <p>Your intelligent AI-powered assistant. Ask me anything!</p>
-          </div>
+      <!-- Center Panel - Core System -->
+      <main class="center-panel">
+        <div class="core-system-header">
+          <span class="section-icon">🔮</span>
+          <span class="section-title">CORE SYSTEM</span>
+          <span class="frequency-display">FREQ: 16-2400Hz</span>
         </div>
-
-        <!-- Input Area -->
-        <div class="input-area">
-          <textarea 
-            id="messageInput" 
-            placeholder="Type your message..." 
-            rows="1"
-          ></textarea>
-          <button class="send-btn" id="sendBtn">
-            <span>Send</span>
+        <div class="core-visualization">
+          <canvas id="particleCanvas"></canvas>
+        </div>
+        <div class="control-buttons">
+          <button class="control-btn camera-btn" id="cameraBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </button>
+          <button class="control-btn end-btn" id="endBtn">
+            <span class="power-icon">⏻</span>
+            <span>END</span>
+          </button>
+          <button class="control-btn mic-btn active" id="micBtn">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
           </button>
         </div>
       </main>
+
+      <!-- Right Panel - Transcript -->
+      <aside class="right-panel">
+        <div class="panel-section transcript-section">
+          <div class="section-header">
+            <span class="section-icon">📝</span>
+            <span class="section-title">TRANSCRIPT</span>
+          </div>
+          <div class="transcript-messages" id="transcriptMessages">
+            <div class="transcript-message ai">
+              <span class="message-label">KREO</span>
+              <div class="message-bubble">
+                Pownin's ka main focus fast image generation par hai, jaise Flux model wagera. Image recognition ke liye unke paas alag ye dedicated models currently nahi hain. Toh hum native models se hi image recognition ka kaam zyada ache se kar sakte hain.
+              </div>
+            </div>
+            <div class="transcript-message user">
+              <span class="message-label">YOU</span>
+              <div class="message-bubble">
+                Okay just check out what I am holding currently in my hand.
+              </div>
+            </div>
+            <div class="transcript-message ai">
+              <span class="message-label">KREO</span>
+              <div class="message-bubble">
+                Bhai can't see it bro. Maybe thoda aur clearly dikha do? Ya phir bata do kya hai.
+              </div>
+            </div>
+            <div class="transcript-message user">
+              <span class="message-label">YOU</span>
+              <div class="message-bubble">
+                &lt;endosp&gt; Okay, aur hume ek aur chezz add kar dena ki agar sha banana hai to miske comment karo slap coding. &lt;endosp&gt;
+              </div>
+            </div>
+            <div class="transcript-message ai">
+              <span class="message-label">KREO</span>
+              <div class="message-bubble">
+                Pakka! Yeh wali line add kar donga. Ready bro?
+              </div>
+            </div>
+            <div class="transcript-message user">
+              <span class="message-label">YOU</span>
+              <div class="message-bubble">
+                &lt;endosp&gt; ahi fibi ya dhod airess |
+              </div>
+            </div>
+          </div>
+          <div class="transcript-input">
+            <input type="text" id="messageInput" placeholder="Type your message...">
+            <button class="send-btn" id="sendBtn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </aside>
     </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <span>CREATED WITH</span>
+      <span class="heart">❤️</span>
+      <span class="creator">BHAVESH PANDEY</span>
+    </footer>
   </div>
 
-  <script>
-    const messageInput = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const messagesContainer = document.getElementById('messagesContainer');
-
-    function addMessage(content, isUser = false) {
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
-      messageDiv.innerHTML = `
-        <div class="message-content">${content}</div>
-        <div class="message-time">${new Date().toLocaleTimeString()}</div>
-      `;
-      messagesContainer.appendChild(messageDiv);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    async function sendMessage() {
-      const message = messageInput.value.trim();
-      if (!message) return;
-
-      addMessage(message, true);
-      messageInput.value = '';
-
-      try {
-        const response = await window.electronAPI.sendMessage(message);
-        addMessage(response.response);
-      } catch (error) {
-        addMessage('Error: Could not process message');
-      }
-    }
-
-    sendBtn.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
-    });
-  </script>
+  <script src="renderer.js"></script>
 </body>
 </html>

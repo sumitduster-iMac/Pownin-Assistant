@@ -5,10 +5,10 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 700,
-    minWidth: 600,
-    minHeight: 400,
+    width: 1400,
+    height: 850,
+    minWidth: 900,
+    minHeight: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -137,6 +137,22 @@ ipcMain.handle('send-message', async (event, message) => {
   return {
     response: `Received: ${message}`,
     timestamp: new Date().toISOString()
+  };
+});
+
+ipcMain.handle('get-system-metrics', async () => {
+  // Return simulated system metrics
+  // In production, you could use os-utils or systeminformation package
+  return {
+    cpu: Math.floor(Math.random() * 30 + 10),
+    ram: Math.floor(Math.random() * 15 + 10),
+    processes: [
+      { name: 'WindowServer', cpu: (35 + Math.random() * 10).toFixed(1), mem: '0.6' },
+      { name: 'Eres Helper (GPU)', cpu: (28 + Math.random() * 10).toFixed(1), mem: '1.3' },
+      { name: 'Eres Helper (Renderer)', cpu: (15 + Math.random() * 8).toFixed(1), mem: '1.8' },
+      { name: 'coreaudiod', cpu: (10 + Math.random() * 5).toFixed(1), mem: '0.7' },
+      { name: 'corespotd', cpu: (4 + Math.random() * 4).toFixed(1), mem: '0.2' }
+    ]
   };
 });
 
