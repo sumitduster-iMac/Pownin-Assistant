@@ -36,7 +36,10 @@
     "mac": {
       "category": "public.app-category.productivity",
       "icon": "assets/icon.svg",
-      "target": "dmg"
+      "target": {
+        "target": "dmg",
+        "arch": "universal"
+      }
     },
     "win": {
       "icon": "assets/icon.svg",
