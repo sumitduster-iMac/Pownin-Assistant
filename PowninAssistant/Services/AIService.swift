@@ -46,6 +46,11 @@ class AIService: ObservableObject {
         providers = [
             OpenAIProvider(),
             AnthropicProvider(),
+            GrokProvider(),
+            CopilotProvider(),
+            GeminiProvider(),
+            PerplexityProvider(),
+            MistralProvider(),
             LocalAIProvider() // Always available as fallback
         ]
         

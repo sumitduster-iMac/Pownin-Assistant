@@ -4,17 +4,42 @@ Pownin Assistant now supports multiple AI model providers with automatic fallbac
 
 ## Supported AI Models
 
-### 1. OpenAI GPT (Primary)
-- **Models**: GPT-3.5-turbo, GPT-4, etc.
+### 1. OpenAI GPT
+- **Models**: GPT-3.5-turbo, GPT-4, GPT-4-turbo
 - **Best for**: General conversations, complex reasoning
-- **Setup**: Requires OpenAI API key
+- **Setup**: Requires OpenAI API key (`OPENAI_API_KEY`)
 
-### 2. Anthropic Claude (Secondary)
+### 2. Anthropic Claude
 - **Models**: Claude 3 Haiku, Claude 3 Sonnet, Claude 3 Opus
-- **Best for**: Detailed analysis, creative tasks
-- **Setup**: Requires Anthropic API key
+- **Best for**: Detailed analysis, creative tasks, long context
+- **Setup**: Requires Anthropic API key (`ANTHROPIC_API_KEY`)
 
-### 3. Local AI (Fallback)
+### 3. xAI Grok
+- **Models**: Grok Beta, Grok-2
+- **Best for**: Real-time information, conversational AI
+- **Setup**: Requires xAI API key (`XAI_API_KEY`)
+
+### 4. GitHub Copilot
+- **Models**: GPT-4o via GitHub Models
+- **Best for**: Code-related queries, developer assistance
+- **Setup**: Requires GitHub token (`GITHUB_TOKEN`)
+
+### 5. Google Gemini
+- **Models**: Gemini Pro, Gemini Pro Vision
+- **Best for**: Multimodal tasks, Google ecosystem integration
+- **Setup**: Requires Google API key (`GEMINI_API_KEY`)
+
+### 6. Perplexity AI
+- **Models**: Llama 3.1 Sonar models
+- **Best for**: Research, fact-checking, online information
+- **Setup**: Requires Perplexity API key (`PERPLEXITY_API_KEY`)
+
+### 7. Mistral AI
+- **Models**: Mistral Small, Mistral Medium, Mistral Large
+- **Best for**: European data privacy, multilingual support
+- **Setup**: Requires Mistral API key (`MISTRAL_API_KEY`)
+
+### 8. Local AI (Fallback)
 - **Type**: Rule-based system
 - **Best for**: System monitoring queries, basic interactions
 - **Setup**: Always available, no configuration needed
@@ -55,13 +80,64 @@ echo 'export ANTHROPIC_API_KEY="your-api-key-here"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
+### Setting Up xAI Grok
+
+1. Get your API key from [xAI Console](https://console.x.ai/)
+
+2. Set the environment variable:
+
+```bash
+export XAI_API_KEY="your-api-key-here"
+```
+
+### Setting Up GitHub Copilot
+
+1. Get your GitHub token with Copilot access from [GitHub Settings](https://github.com/settings/tokens)
+
+2. Set the environment variable:
+
+```bash
+export GITHUB_TOKEN="your-github-token"
+```
+
+### Setting Up Google Gemini
+
+1. Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+
+2. Set the environment variable:
+
+```bash
+export GEMINI_API_KEY="your-api-key-here"
+```
+
+### Setting Up Perplexity AI
+
+1. Get your API key from [Perplexity AI](https://www.perplexity.ai/settings/api)
+
+2. Set the environment variable:
+
+```bash
+export PERPLEXITY_API_KEY="your-api-key-here"
+```
+
+### Setting Up Mistral AI
+
+1. Get your API key from [Mistral Console](https://console.mistral.ai/)
+
+2. Set the environment variable:
+
+```bash
+export MISTRAL_API_KEY="your-api-key-here"
+```
+```
+
 ### Running with API Keys
 
 After setting environment variables, run the application:
 
 ```bash
 # Make sure environment variables are set
-env | grep -E "OPENAI_API_KEY|ANTHROPIC_API_KEY"
+env | grep -E "OPENAI_API_KEY|ANTHROPIC_API_KEY|XAI_API_KEY|GITHUB_TOKEN|GEMINI_API_KEY|PERPLEXITY_API_KEY|MISTRAL_API_KEY"
 
 # Run the application
 swift run
@@ -81,7 +157,12 @@ The application automatically selects the best available AI model in this priori
 
 1. **OpenAI GPT** - If API key is configured
 2. **Anthropic Claude** - If API key is configured
-3. **Local AI** - Always available as fallback
+3. **xAI Grok** - If API key is configured
+4. **GitHub Copilot** - If GitHub token is configured
+5. **Google Gemini** - If API key is configured
+6. **Perplexity AI** - If API key is configured
+7. **Mistral AI** - If API key is configured
+8. **Local AI** - Always available as fallback
 
 ### Smart Fallback
 
@@ -91,9 +172,14 @@ If a provider fails (network error, rate limit, etc.), the system automatically 
 
 The UI header shows which AI model is currently active:
 ```
-🧠 OpenAI GPT    (when OpenAI is available)
-🧠 Anthropic Claude    (when Claude is available)
-🧠 Local AI    (fallback mode)
+🧠 OpenAI GPT         (when OpenAI is available)
+🧠 Anthropic Claude   (when Claude is available)
+🧠 xAI Grok          (when Grok is available)
+🧠 GitHub Copilot    (when Copilot is available)
+🧠 Google Gemini     (when Gemini is available)
+🧠 Perplexity AI     (when Perplexity is available)
+🧠 Mistral AI        (when Mistral is available)
+🧠 Local AI          (fallback mode)
 ```
 
 ## Example Responses

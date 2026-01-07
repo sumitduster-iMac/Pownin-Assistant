@@ -12,7 +12,7 @@ An intelligent macOS assistant application with AI integration and real-time sys
 - Dark mode support
 
 ### 🤖 AI Integration
-- **Multiple AI Models**: Support for OpenAI GPT, Anthropic Claude, and Local AI
+- **Multiple AI Models**: Support for 8 AI providers including OpenAI GPT, Anthropic Claude, xAI Grok, GitHub Copilot, Google Gemini, Perplexity AI, Mistral AI, and Local AI
 - **Automatic Fallback**: Intelligently switches between providers based on availability
 - **Dynamic Response System**: Context-aware AI responses based on real-time data
 - **Context Analysis**: Intelligent conversation analysis to understand user intent
@@ -47,6 +47,11 @@ PowninAssistant/
     ├── AIModelProvider.swift    # AI model provider protocol
     ├── OpenAIProvider.swift     # OpenAI GPT integration
     ├── AnthropicProvider.swift  # Anthropic Claude integration
+    ├── GrokProvider.swift       # xAI Grok integration
+    ├── CopilotProvider.swift    # GitHub Copilot integration
+    ├── GeminiProvider.swift     # Google Gemini integration
+    ├── PerplexityProvider.swift # Perplexity AI integration
+    ├── MistralProvider.swift    # Mistral AI integration
     ├── LocalAIProvider.swift    # Local rule-based AI (fallback)
     ├── SystemMonitor.swift      # Real-time system monitoring
     └── ContextAnalyzer.swift    # Context analysis for AI
@@ -58,21 +63,23 @@ PowninAssistant/
 - Intel Mac (x86_64 architecture)
 - Xcode 14.0 or later
 - Swift 5.9 or later
-- (Optional) OpenAI API key for GPT models
-- (Optional) Anthropic API key for Claude models
+- (Optional) API keys for any of the 7 supported AI providers
 
 ## AI Model Setup
 
-Pownin Assistant supports multiple AI models. See [AI_MODELS.md](AI_MODELS.md) for detailed configuration.
+Pownin Assistant supports 8 AI model providers. See [AI_MODELS.md](AI_MODELS.md) for detailed configuration.
 
 ### Quick Setup
 
 ```bash
-# For OpenAI GPT
+# Configure any or all of these AI providers:
 export OPENAI_API_KEY="your-openai-key"
-
-# For Anthropic Claude
 export ANTHROPIC_API_KEY="your-anthropic-key"
+export XAI_API_KEY="your-xai-key"
+export GITHUB_TOKEN="your-github-token"
+export GEMINI_API_KEY="your-gemini-key"
+export PERPLEXITY_API_KEY="your-perplexity-key"
+export MISTRAL_API_KEY="your-mistral-key"
 
 # Run the application
 swift run
