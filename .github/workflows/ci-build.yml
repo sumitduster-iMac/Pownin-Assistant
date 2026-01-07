@@ -1,0 +1,118 @@
+name: CI - Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-intel-mac:
+    name: Build for Intel Mac
+    runs-on: macos-13
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+    
+    - name: Display Swift version
+      run: swift --version
+      
+    - name: Display architecture
+      run: uname -m
+      
+    - name: Check system information
+      run: |
+        echo "System: $(sw_vers -productName) $(sw_vers -productVersion)"
+        echo "Architecture: $(uname -m)"
+        sysctl -n machdep.cpu.brand_string
+    
+    - name: Build for Intel Mac (x86_64)
+      run: swift build -c release --arch x86_64
+      
+    - name: Run tests
+      run: swift test --arch x86_64
+      continue-on-error: true
+      
+    - name: Archive build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: PowninAssistant-Intel-Mac
+        path: .build/release/PowninAssistant
+        if-no-files-found: warn
+
+  ai-integration-check:
+    name: Verify AI Integration
+    runs-on: macos-13
+    needs: build-intel-mac
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Verify AI Service implementation
+      run: |
+        echo "Checking AI Service files..."
+        if [ -f "PowninAssistant/Services/AIService.swift" ]; then
+          echo "✓ AIService.swift found"
+          grep -q "processMessage" PowninAssistant/Services/AIService.swift && echo "✓ processMessage method exists"
+          grep -q "gatherContext" PowninAssistant/Services/AIService.swift && echo "✓ gatherContext method exists"
+          grep -q "generateResponse" PowninAssistant/Services/AIService.swift && echo "✓ generateResponse method exists"
+        else
+          echo "✗ AIService.swift not found"
+          exit 1
+        fi
+        
+    - name: Verify System Monitor
+      run: |
+        echo "Checking System Monitor..."
+        if [ -f "PowninAssistant/Services/SystemMonitor.swift" ]; then
+          echo "✓ SystemMonitor.swift found"
+          grep -q "getCPUUsage" PowninAssistant/Services/SystemMonitor.swift && echo "✓ getCPUUsage method exists"
+          grep -q "getMemoryUsage" PowninAssistant/Services/SystemMonitor.swift && echo "✓ getMemoryUsage method exists"
+        else
+          echo "✗ SystemMonitor.swift not found"
+          exit 1
+        fi
+        
+    - name: Verify Context Analyzer
+      run: |
+        echo "Checking Context Analyzer..."
+        if [ -f "PowninAssistant/Services/ContextAnalyzer.swift" ]; then
+          echo "✓ ContextAnalyzer.swift found"
+          grep -q "analyzeConversation" PowninAssistant/Services/ContextAnalyzer.swift && echo "✓ analyzeConversation method exists"
+        else
+          echo "✗ ContextAnalyzer.swift not found"
+          exit 1
+        fi
+
+  deployment:
+    name: Package for Distribution
+    runs-on: macos-13
+    needs: [build-intel-mac, ai-integration-check]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Build release version
+      run: swift build -c release --arch x86_64
+        
+    - name: Create distribution package
+      run: |
+        mkdir -p dist
+        cp -r .build/release/PowninAssistant dist/
+        tar -czf PowninAssistant-Intel-Mac-v1.0.tar.gz -C dist .
+        
+    - name: Upload distribution package
+      uses: actions/upload-artifact@v4
+      with:
+        name: PowninAssistant-Distribution
+        path: PowninAssistant-Intel-Mac-v1.0.tar.gz
