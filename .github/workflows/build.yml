@@ -10,7 +10,7 @@ on:
 jobs:
   build-swift-macos:
     name: Build Swift macOS App (Universal)
-    runs-on: macos-latest
+    runs-on: macos-13
     
     steps:
     - name: Checkout code
@@ -69,7 +69,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-13, ubuntu-latest, windows-latest]
         
     steps:
     - name: Checkout code
@@ -103,7 +103,7 @@ jobs:
 
   verify-integration:
     name: Verify AI Integration
-    runs-on: macos-latest
+    runs-on: macos-13
     needs: build-swift-macos
     
     steps:
