@@ -1,81 +1,83 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#6366F1"/>
-      <stop offset="50%" style="stop-color:#8B5CF6"/>
-      <stop offset="100%" style="stop-color:#A855F7"/>
+    <!-- Main gradient - deep blue to purple -->
+    <linearGradient id="mainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667EEA"/>
+      <stop offset="100%" style="stop-color:#764BA2"/>
     </linearGradient>
-    <linearGradient id="innerGlow" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.3"/>
+    
+    <!-- Highlight gradient -->
+    <linearGradient id="highlightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.4"/>
+      <stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0.1"/>
       <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0"/>
     </linearGradient>
-    <linearGradient id="brainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#FFFFFF"/>
-      <stop offset="100%" style="stop-color:#E0E7FF"/>
-    </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="8" stdDeviation="20" flood-color="#4C1D95" flood-opacity="0.4"/>
+    
+    <!-- Shadow filter -->
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="24" flood-color="#1a1a2e" flood-opacity="0.35"/>
     </filter>
-    <filter id="innerShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.15"/>
+    
+    <!-- Inner glow -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
   </defs>
   
   <!-- Background rounded square -->
-  <rect x="64" y="64" width="896" height="896" rx="200" ry="200" fill="url(#bgGrad)" filter="url(#shadow)"/>
+  <rect x="56" y="56" width="912" height="912" rx="208" ry="208" fill="url(#mainGrad)" filter="url(#dropShadow)"/>
   
-  <!-- Inner glow overlay -->
-  <rect x="64" y="64" width="896" height="448" rx="200" ry="200" fill="url(#innerGlow)"/>
+  <!-- Top highlight -->
+  <path d="M264 56 L760 56 Q968 56 968 264 L968 400 Q512 480 56 400 L56 264 Q56 56 264 56 Z" fill="url(#highlightGrad)"/>
   
-  <!-- Brain/AI icon -->
-  <g transform="translate(512, 480)" filter="url(#innerShadow)">
-    <!-- Left hemisphere -->
-    <path d="M-180 -120 
-             C-180 -200 -120 -240 -60 -240
-             C-20 -240 20 -220 40 -180
-             C60 -220 100 -240 140 -240
-             C200 -240 260 -180 260 -100
-             C260 -40 240 20 200 60
-             C160 100 100 140 40 160
-             C-20 180 -100 180 -160 140
-             C-220 100 -260 40 -260 -40
-             C-260 -80 -220 -120 -180 -120Z"
-          fill="url(#brainGrad)" opacity="0.95"/>
+  <!-- Central AI/Chat bubble icon -->
+  <g transform="translate(512, 512)">
+    <!-- Main bubble -->
+    <path d="M-240 -180 
+             C-240 -260, -160 -300, -40 -300 
+             L40 -300 
+             C160 -300, 240 -260, 240 -180 
+             L240 60 
+             C240 140, 160 180, 40 180 
+             L-80 180 
+             L-160 280 
+             L-140 180 
+             L-40 180 
+             C-160 180, -240 140, -240 60 
+             Z"
+          fill="#FFFFFF" opacity="0.95"/>
     
-    <!-- Brain folds/details -->
-    <path d="M-120 -160 Q-80 -120 -120 -80 Q-160 -40 -120 0 Q-80 40 -140 80"
-          stroke="#A5B4FC" stroke-width="16" fill="none" stroke-linecap="round" opacity="0.6"/>
-    <path d="M0 -180 Q40 -140 0 -100 Q-40 -60 0 -20 Q40 20 0 60 Q-40 100 0 140"
-          stroke="#A5B4FC" stroke-width="16" fill="none" stroke-linecap="round" opacity="0.6"/>
-    <path d="M120 -160 Q160 -120 120 -80 Q80 -40 120 0 Q160 40 120 80"
-          stroke="#A5B4FC" stroke-width="16" fill="none" stroke-linecap="round" opacity="0.6"/>
-    
-    <!-- Neural network dots -->
-    <circle cx="-100" cy="-120" r="12" fill="#FFFFFF"/>
-    <circle cx="-60" cy="-60" r="10" fill="#FFFFFF"/>
-    <circle cx="0" cy="-140" r="14" fill="#FFFFFF"/>
-    <circle cx="60" cy="-80" r="11" fill="#FFFFFF"/>
-    <circle cx="100" cy="-140" r="12" fill="#FFFFFF"/>
-    <circle cx="-80" cy="20" r="10" fill="#FFFFFF"/>
-    <circle cx="40" cy="0" r="13" fill="#FFFFFF"/>
-    <circle cx="80" cy="60" r="11" fill="#FFFFFF"/>
-    <circle cx="-40" cy="80" r="10" fill="#FFFFFF"/>
+    <!-- Animated dots container -->
+    <g filter="url(#glow)">
+      <!-- Left dot -->
+      <circle cx="-100" cy="-60" r="32" fill="#667EEA">
+        <animate attributeName="opacity" values="1;0.4;1" dur="1.5s" repeatCount="indefinite"/>
+      </circle>
+      
+      <!-- Center dot -->
+      <circle cx="0" cy="-60" r="32" fill="#764BA2">
+        <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/>
+      </circle>
+      
+      <!-- Right dot -->
+      <circle cx="100" cy="-60" r="32" fill="#667EEA">
+        <animate attributeName="opacity" values="1;0.4;1" dur="1.5s" repeatCount="indefinite" begin="0.3s"/>
+      </circle>
+    </g>
   </g>
   
-  <!-- Sparkle accents -->
-  <g fill="#FFFFFF">
-    <circle cx="200" cy="200" r="16" opacity="0.8"/>
-    <circle cx="824" cy="280" r="12" opacity="0.6"/>
-    <circle cx="180" cy="720" r="10" opacity="0.5"/>
-    <circle cx="844" cy="760" r="14" opacity="0.7"/>
+  <!-- Decorative sparkles -->
+  <g fill="#FFFFFF" opacity="0.6">
+    <circle cx="180" cy="180" r="12"/>
+    <circle cx="844" cy="200" r="16"/>
+    <circle cx="160" cy="780" r="10"/>
+    <circle cx="864" cy="820" r="14"/>
   </g>
   
-  <!-- Bottom accent bar -->
-  <rect x="312" y="780" width="400" height="60" rx="30" fill="#FFFFFF" opacity="0.2"/>
-  
-  <!-- Chat bubble indicator -->
-  <g transform="translate(712, 280)">
-    <circle cx="0" cy="0" r="80" fill="#10B981"/>
-    <path d="M-30 -20 L-10 0 L30 -40" stroke="#FFFFFF" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  </g>
+  <!-- Subtle bottom reflection -->
+  <ellipse cx="512" cy="920" rx="300" ry="20" fill="#FFFFFF" opacity="0.1"/>
 </svg>
