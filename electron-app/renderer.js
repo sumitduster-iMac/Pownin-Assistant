@@ -126,7 +126,7 @@ class ParticleSystem {
   }
 }
 
-// System Metrics Simulator
+// Real-time System Metrics
 class SystemMetrics {
   constructor() {
     this.cpuValue = document.getElementById('cpuValue');
@@ -135,36 +135,101 @@ class SystemMetrics {
     this.ramBar = document.getElementById('ramBar');
     this.ramDetails = document.getElementById('ramDetails');
     this.processesBody = document.getElementById('processesBody');
+    this.metricsStatus = document.querySelector('.metrics-status');
     
     this.updateMetrics();
+    // Update every 2 seconds for real-time data
     setInterval(() => this.updateMetrics(), 2000);
   }
   
-  updateMetrics() {
-    // Simulate CPU usage (fluctuating between 10-40%)
+  async updateMetrics() {
+    try {
+      // Check if electronAPI is available
+      if (typeof window.electronAPI !== 'undefined' && window.electronAPI.getSystemMetrics) {
+        const metrics = await window.electronAPI.getSystemMetrics();
+        this.displayMetrics(metrics);
+      } else {
+        // Fallback for browser testing
+        this.displayFallbackMetrics();
+      }
+    } catch (error) {
+      console.error('Failed to get system metrics:', error);
+      this.displayFallbackMetrics();
+    }
+  }
+  
+  displayMetrics(metrics) {
+    // Update CPU
+    if (this.cpuValue) {
+      this.cpuValue.textContent = `${metrics.cpu}%`;
+      this.cpuBar.style.width = `${Math.min(metrics.cpu, 100)}%`;
+      
+      // Change color based on CPU load
+      if (metrics.cpu > 80) {
+        this.cpuBar.style.background = 'linear-gradient(90deg, #ff3b3b, #ff6b6b)';
+      } else if (metrics.cpu > 50) {
+        this.cpuBar.style.background = 'linear-gradient(90deg, #ff9500, #ffd700)';
+      } else {
+        this.cpuBar.style.background = 'linear-gradient(90deg, #00ff88, #00d4ff)';
+      }
+    }
+    
+    // Update RAM
+    if (this.ramValue) {
+      this.ramValue.textContent = `${metrics.ram}%`;
+      this.ramBar.style.width = `${Math.min(metrics.ram, 100)}%`;
+      this.ramDetails.textContent = `${metrics.ramUsed} / ${metrics.ramTotal} GB`;
+      
+      // Change color based on RAM usage
+      if (metrics.ram > 80) {
+        this.ramBar.style.background = 'linear-gradient(90deg, #ff3b3b, #ff6b6b)';
+      } else if (metrics.ram > 60) {
+        this.ramBar.style.background = 'linear-gradient(90deg, #ff9500, #ffd700)';
+      } else {
+        this.ramBar.style.background = 'linear-gradient(90deg, #ff0066, #ff9500)';
+      }
+    }
+    
+    // Update processes
+    if (this.processesBody && metrics.processes && metrics.processes.length > 0) {
+      this.processesBody.innerHTML = metrics.processes.map(p => `
+        <tr>
+          <td title="${p.name}">${this.truncateName(p.name, 20)}</td>
+          <td class="cpu-cell">${parseFloat(p.cpu).toFixed(1)}%</td>
+          <td>${parseFloat(p.mem).toFixed(1)}%</td>
+        </tr>
+      `).join('');
+    }
+    
+    // Update status indicator
+    if (this.metricsStatus) {
+      this.metricsStatus.classList.add('online');
+    }
+  }
+  
+  displayFallbackMetrics() {
+    // Fallback with simulated data for browser testing
     const cpu = Math.floor(Math.random() * 30 + 10);
+    const ram = Math.floor(Math.random() * 40 + 30);
+    
     if (this.cpuValue) {
       this.cpuValue.textContent = `${cpu}%`;
       this.cpuBar.style.width = `${cpu}%`;
     }
     
-    // Simulate RAM usage (fluctuating between 10-25%)
-    const ram = Math.floor(Math.random() * 15 + 10);
-    const ramGB = (ram * 0.32).toFixed(1);
     if (this.ramValue) {
       this.ramValue.textContent = `${ram}%`;
       this.ramBar.style.width = `${ram}%`;
-      this.ramDetails.textContent = `${ramGB} GB`;
+      this.ramDetails.textContent = `${(ram * 0.16).toFixed(1)} / 16.0 GB`;
     }
     
-    // Update processes with slight variations
     if (this.processesBody) {
       const processes = [
-        { name: 'WindowServer', cpu: (35 + Math.random() * 10).toFixed(1), mem: '0.6' },
-        { name: 'Eres Helper (GPU)', cpu: (28 + Math.random() * 10).toFixed(1), mem: '1.3' },
-        { name: 'Eres Helper (Renderer)', cpu: (15 + Math.random() * 8).toFixed(1), mem: '1.8' },
-        { name: 'coreaudiod', cpu: (10 + Math.random() * 5).toFixed(1), mem: '0.7' },
-        { name: 'corespotd', cpu: (4 + Math.random() * 4).toFixed(1), mem: '0.2' }
+        { name: 'System Process', cpu: (5 + Math.random() * 10).toFixed(1), mem: '2.0' },
+        { name: 'Browser', cpu: (3 + Math.random() * 8).toFixed(1), mem: '4.5' },
+        { name: 'Desktop Manager', cpu: (2 + Math.random() * 5).toFixed(1), mem: '1.2' },
+        { name: 'Audio Service', cpu: (1 + Math.random() * 3).toFixed(1), mem: '0.5' },
+        { name: 'Background Task', cpu: (0.5 + Math.random() * 2).toFixed(1), mem: '0.3' }
       ];
       
       this.processesBody.innerHTML = processes.map(p => `
@@ -175,6 +240,13 @@ class SystemMetrics {
         </tr>
       `).join('');
     }
+  }
+  
+  truncateName(name, maxLength) {
+    if (name.length > maxLength) {
+      return name.substring(0, maxLength - 3) + '...';
+    }
+    return name;
   }
 }
 
