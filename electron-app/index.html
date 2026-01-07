@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline';">
+  <title>Pownin Assistant</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Title Bar -->
+    <div class="title-bar">
+      <div class="title-bar-drag-region"></div>
+      <div class="title-bar-content">
+        <div class="app-icon">🤖</div>
+        <span class="app-title">Pownin Assistant</span>
+      </div>
+      <div class="system-info">
+        <span class="status-indicator active"></span>
+        <span class="status-text">AI Active</span>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h3>Conversations</h3>
+          <button class="new-chat-btn" id="newChatBtn">+ New Chat</button>
+        </div>
+        <div class="conversation-list" id="conversationList">
+          <div class="conversation-item active">
+            <span class="conversation-icon">💬</span>
+            <span class="conversation-title">Current Chat</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Chat Area -->
+      <main class="chat-area">
+        <div class="messages-container" id="messagesContainer">
+          <div class="welcome-message">
+            <h2>Welcome to Pownin Assistant</h2>
+            <p>Your intelligent AI-powered assistant. Ask me anything!</p>
+          </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+          <textarea 
+            id="messageInput" 
+            placeholder="Type your message..." 
+            rows="1"
+          ></textarea>
+          <button class="send-btn" id="sendBtn">
+            <span>Send</span>
+          </button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const messagesContainer = document.getElementById('messagesContainer');
+
+    function addMessage(content, isUser = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
+      messageDiv.innerHTML = `
+        <div class="message-content">${content}</div>
+        <div class="message-time">${new Date().toLocaleTimeString()}</div>
+      `;
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      addMessage(message, true);
+      messageInput.value = '';
+
+      try {
+        const response = await window.electronAPI.sendMessage(message);
+        addMessage(response.response);
+      } catch (error) {
+        addMessage('Error: Could not process message');
+      }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
