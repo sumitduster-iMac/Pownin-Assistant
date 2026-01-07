@@ -33,10 +33,10 @@ class AIService: ObservableObject {
         
         isProcessing = true
         
-        // Gather real-time context
-        let context = await gatherContext()
+        // Gather real-time context (synchronous but in async context for future extensibility)
+        let context = gatherContext()
         
-        // Generate AI response based on input and context (now synchronous)
+        // Generate AI response based on input and context
         let response = generateResponse(for: input, context: context)
         
         // Add AI response
@@ -51,7 +51,7 @@ class AIService: ObservableObject {
         isProcessing = false
     }
     
-    private func gatherContext() async -> MessageContext {
+    private func gatherContext() -> MessageContext {
         // Gather real-time system data
         let systemState = SystemState(
             cpuUsage: SystemMonitor.shared.getCPUUsage(),
