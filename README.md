@@ -96,9 +96,9 @@ npm install
 npm start
 
 # Package for distribution (optional)
-npm run package:mac-universal  # macOS Universal
-npm run package:win            # Windows
-npm run package:linux          # Linux
+npm run package:mac      # macOS (Universal: x64 + arm64)
+npm run package:win      # Windows
+npm run package:linux    # Linux
 ```
 
 > 💡 **Tip**: See [QUICK_START.md](QUICK_START.md) for detailed installation instructions and troubleshooting.
@@ -200,10 +200,9 @@ npm start
 npm run build
 
 # Package for all platforms
-npm run package:mac-universal  # macOS Universal
-npm run package:win            # Windows
-npm run package:linux          # Linux
-npm run package:all            # All platforms
+npm run package:mac      # macOS (Universal: x64 + arm64)
+npm run package:win      # Windows
+npm run package:linux    # Linux
 ```
 
 ### Generate App Icons
