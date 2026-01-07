@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "An intelligent cross-platform assistant with AI integration",
   "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sumitduster-iMac/Pownin-Assistant.git"
+  },
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
@@ -32,6 +36,11 @@
     "productName": "Pownin Assistant",
     "directories": {
       "output": "dist"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "sumitduster-iMac",
+      "repo": "Pownin-Assistant"
     },
     "mac": {
       "category": "public.app-category.productivity",
