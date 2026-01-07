@@ -12,6 +12,8 @@ An intelligent macOS assistant application with AI integration and real-time sys
 - Dark mode support
 
 ### 🤖 AI Integration
+- **Multiple AI Models**: Support for OpenAI GPT, Anthropic Claude, and Local AI
+- **Automatic Fallback**: Intelligently switches between providers based on availability
 - **Dynamic Response System**: Context-aware AI responses based on real-time data
 - **Context Analysis**: Intelligent conversation analysis to understand user intent
 - **Real-time Data Processing**: Integrates live system metrics into responses
@@ -42,6 +44,10 @@ PowninAssistant/
 │   └── Message.swift            # Data models
 └── Services/
     ├── AIService.swift          # AI integration and response generation
+    ├── AIModelProvider.swift    # AI model provider protocol
+    ├── OpenAIProvider.swift     # OpenAI GPT integration
+    ├── AnthropicProvider.swift  # Anthropic Claude integration
+    ├── LocalAIProvider.swift    # Local rule-based AI (fallback)
     ├── SystemMonitor.swift      # Real-time system monitoring
     └── ContextAnalyzer.swift    # Context analysis for AI
 ```
@@ -52,6 +58,27 @@ PowninAssistant/
 - Intel Mac (x86_64 architecture)
 - Xcode 14.0 or later
 - Swift 5.9 or later
+- (Optional) OpenAI API key for GPT models
+- (Optional) Anthropic API key for Claude models
+
+## AI Model Setup
+
+Pownin Assistant supports multiple AI models. See [AI_MODELS.md](AI_MODELS.md) for detailed configuration.
+
+### Quick Setup
+
+```bash
+# For OpenAI GPT
+export OPENAI_API_KEY="your-openai-key"
+
+# For Anthropic Claude
+export ANTHROPIC_API_KEY="your-anthropic-key"
+
+# Run the application
+swift run
+```
+
+The application works without API keys using the local AI fallback.
 
 ## Building
 

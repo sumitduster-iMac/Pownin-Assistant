@@ -64,6 +64,7 @@ struct ContentView: View {
 }
 
 struct HeaderView: View {
+    @EnvironmentObject var aiService: AIService
     @State private var cpuUsage: Double = 0.0
     @State private var memoryUsage: Double = 0.0
     @State private var timer: Timer?
@@ -78,6 +79,16 @@ struct HeaderView: View {
                 HStack(spacing: 16) {
                     SystemInfoLabel(icon: "cpu", value: String(format: "%.1f%%", cpuUsage), color: .blue)
                     SystemInfoLabel(icon: "memorychip", value: String(format: "%.1f%%", memoryUsage), color: .green)
+                    
+                    // AI Model indicator
+                    HStack(spacing: 4) {
+                        Image(systemName: "brain")
+                            .foregroundColor(.purple)
+                            .font(.system(size: 12))
+                        Text(aiService.currentProvider)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
             

@@ -3,6 +3,7 @@
 //  Pownin-Assistant
 //
 //  AI integration service with dynamic response capabilities
+//  Supports multiple AI model providers with automatic fallback
 //
 
 import Foundation
@@ -12,17 +13,47 @@ import Combine
 class AIService: ObservableObject {
     @Published var messages: [Message] = []
     @Published var isProcessing: Bool = false
+    @Published var currentProvider: String = "Initializing..."
     
     private var conversationHistory: [Message] = []
     private let contextAnalyzer = ContextAnalyzer()
+    private var providers: [AIModelProvider] = []
+    private var currentProviderIndex: Int = 0
     
     init() {
+        // Initialize all AI model providers
+        setupProviders()
+        
         // Add welcome message
         let welcomeMessage = Message(
-            content: "Hello! I'm Pownin Assistant, your intelligent macOS companion. I can help you with system information, answer questions, and provide context-aware assistance. How can I help you today?",
+            content: """
+            Hello! I'm Pownin Assistant, your intelligent macOS companion powered by \(currentProvider).
+            
+            I can help you with system information, answer questions, and provide context-aware assistance.
+            
+            Available AI models:
+            \(providers.map { "• \($0.name)\(($0.isAvailable ? " ✓" : " (configure API key)"))" }.joined(separator: "\n"))
+            
+            How can I help you today?
+            """,
             isUser: false
         )
         messages.append(welcomeMessage)
+    }
+    
+    private func setupProviders() {
+        // Add all available providers in priority order
+        providers = [
+            OpenAIProvider(),
+            AnthropicProvider(),
+            LocalAIProvider() // Always available as fallback
+        ]
+        
+        // Find first available provider
+        if let index = providers.firstIndex(where: { $0.isAvailable }) {
+            currentProviderIndex = index
+            currentProvider = providers[index].name
+        }
     }
     
     func processMessage(_ input: String) async {
@@ -33,11 +64,11 @@ class AIService: ObservableObject {
         
         isProcessing = true
         
-        // Gather real-time context (synchronous but in async context for future extensibility)
+        // Gather real-time context
         let context = gatherContext()
         
-        // Generate AI response based on input and context
-        let response = generateResponse(for: input, context: context)
+        // Generate AI response using available providers
+        let response = await generateResponseWithFallback(for: input, context: context)
         
         // Add AI response
         let aiMessage = Message(
@@ -64,57 +95,50 @@ class AIService: ObservableObject {
         return MessageContext(systemState: systemState, relevantData: relevantData)
     }
     
-    private func generateResponse(for input: String, context: MessageContext) -> String {
-        // Note: Processing is synchronous since all logic is local
-        // If external API calls are added in the future, make this async again
-        
-        let lowercasedInput = input.lowercased()
-        
-        // Context-aware responses based on real-time data
-        if lowercasedInput.contains("cpu") || lowercasedInput.contains("processor") {
-            let cpuUsage = context.systemState?.cpuUsage ?? 0.0
-            return "Your CPU is currently at \(String(format: "%.1f%%", cpuUsage)) usage. \(cpuUsage > 70 ? "That's quite high - you might want to check which applications are consuming resources." : "That's a healthy usage level.")"
-        }
-        
-        if lowercasedInput.contains("memory") || lowercasedInput.contains("ram") {
-            let memUsage = context.systemState?.memoryUsage ?? 0.0
-            return "Your memory usage is at \(String(format: "%.1f%%", memUsage)). \(memUsage > 80 ? "You're running low on available memory. Consider closing some applications." : "Your memory usage is in good shape.")"
-        }
-        
-        if lowercasedInput.contains("system") || lowercasedInput.contains("status") {
-            let cpuUsage = context.systemState?.cpuUsage ?? 0.0
-            let memUsage = context.systemState?.memoryUsage ?? 0.0
-            return """
-            Here's your current system status:
-            • CPU Usage: \(String(format: "%.1f%%", cpuUsage))
-            • Memory Usage: \(String(format: "%.1f%%", memUsage))
-            • Architecture: Intel x86_64 (Intel Mac compatible)
-            • Status: System running normally
-            """
-        }
-        
-        if lowercasedInput.contains("hello") || lowercasedInput.contains("hi") {
-            return "Hello! I'm here to assist you with your Intel Mac. What would you like to know?"
-        }
-        
-        if lowercasedInput.contains("help") || lowercasedInput.contains("what can you do") {
-            return """
-            I can help you with:
-            • Real-time system monitoring (CPU, Memory)
-            • Intel Mac architecture information
-            • Context-aware assistance based on your system state
-            • General questions and information
+    private func generateResponseWithFallback(for input: String, context: MessageContext) async -> String {
+        // Try each provider in order
+        for (index, provider) in providers.enumerated() {
+            guard provider.isAvailable else { continue }
             
-            Just ask me anything, and I'll provide intelligent, data-driven responses!
-            """
+            do {
+                let response = try await provider.generateResponse(prompt: input, context: context)
+                
+                // Update current provider if it changed
+                if index != currentProviderIndex {
+                    currentProviderIndex = index
+                    currentProvider = provider.name
+                }
+                
+                return response
+            } catch {
+                print("[\(provider.name)] Error: \(error.localizedDescription)")
+                
+                // If this was the current provider and it failed, try next one
+                if index == currentProviderIndex {
+                    continue
+                }
+            }
         }
         
-        if lowercasedInput.contains("intel") || lowercasedInput.contains("architecture") {
-            return "This application is optimized for Intel Mac (x86_64 architecture). It's designed to run efficiently on Intel-based macOS systems with full compatibility and performance optimization."
+        // Fallback message if all providers fail
+        return "I apologize, but I'm having trouble generating a response right now. Please try again or check your AI model configuration."
+    }
+    
+    func switchProvider(to providerName: String) {
+        if let index = providers.firstIndex(where: { $0.name == providerName && $0.isAvailable }) {
+            currentProviderIndex = index
+            currentProvider = providers[index].name
+            
+            let message = Message(
+                content: "Switched to \(providerName) for AI responses.",
+                isUser: false
+            )
+            messages.append(message)
         }
-        
-        // Default intelligent response
-        return "I understand you're asking about '\(input)'. As an AI assistant with real-time context awareness, I'm constantly monitoring your system (CPU: \(String(format: "%.1f%%", context.systemState?.cpuUsage ?? 0.0)), Memory: \(String(format: "%.1f%%", context.systemState?.memoryUsage ?? 0.0))) to provide the most relevant assistance. Could you provide more details about what you'd like to know?"
+    }
+    
+    func getAvailableProviders() -> [String] {
+        return providers.filter { $0.isAvailable }.map { $0.name }
     }
     
     func clearHistory() {
