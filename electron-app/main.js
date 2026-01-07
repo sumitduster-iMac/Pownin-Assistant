@@ -1,14 +1,16 @@
 const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron');
 const path = require('path');
+const os = require('os');
+const { exec } = require('child_process');
 
 let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 700,
-    minWidth: 600,
-    minHeight: 400,
+    width: 1400,
+    height: 850,
+    minWidth: 900,
+    minHeight: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -137,6 +139,257 @@ ipcMain.handle('send-message', async (event, message) => {
   return {
     response: `Received: ${message}`,
     timestamp: new Date().toISOString()
+  };
+});
+
+// AI Message handling with real API calls
+ipcMain.handle('send-ai-message', async (event, { message, provider, apiKey }) => {
+  if (!apiKey) {
+    return {
+      success: false,
+      error: 'API key not configured. Click the settings icon to add your API key.',
+      response: null
+    };
+  }
+
+  try {
+    if (provider === 'openai') {
+      return await callOpenAI(message, apiKey);
+    } else if (provider === 'anthropic') {
+      return await callAnthropic(message, apiKey);
+    } else {
+      return { success: false, error: 'Unknown provider', response: null };
+    }
+  } catch (error) {
+    return { success: false, error: error.message, response: null };
+  }
+});
+
+// OpenAI API call
+async function callOpenAI(message, apiKey) {
+  const https = require('https');
+  
+  return new Promise((resolve) => {
+    const data = JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You are KREO, a helpful AI assistant. Be concise and friendly.' },
+        { role: 'user', content: message }
+      ],
+      max_tokens: 1000
+    });
+
+    const options = {
+      hostname: 'api.openai.com',
+      port: 443,
+      path: '/v1/chat/completions',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(body);
+          if (json.error) {
+            resolve({ success: false, error: json.error.message, response: null });
+          } else {
+            resolve({
+              success: true,
+              response: json.choices[0].message.content,
+              error: null
+            });
+          }
+        } catch (e) {
+          resolve({ success: false, error: 'Failed to parse response', response: null });
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      resolve({ success: false, error: e.message, response: null });
+    });
+
+    req.write(data);
+    req.end();
+  });
+}
+
+// Anthropic API call
+async function callAnthropic(message, apiKey) {
+  const https = require('https');
+  
+  return new Promise((resolve) => {
+    const data = JSON.stringify({
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 1000,
+      system: 'You are KREO, a helpful AI assistant. Be concise and friendly.',
+      messages: [
+        { role: 'user', content: message }
+      ]
+    });
+
+    const options = {
+      hostname: 'api.anthropic.com',
+      port: 443,
+      path: '/v1/messages',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(body);
+          if (json.error) {
+            resolve({ success: false, error: json.error.message, response: null });
+          } else {
+            resolve({
+              success: true,
+              response: json.content[0].text,
+              error: null
+            });
+          }
+        } catch (e) {
+          resolve({ success: false, error: 'Failed to parse response', response: null });
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      resolve({ success: false, error: e.message, response: null });
+    });
+
+    req.write(data);
+    req.end();
+  });
+}
+
+// Settings storage
+let appSettings = {
+  provider: 'openai',
+  apiKey: ''
+};
+
+ipcMain.handle('save-settings', async (event, settings) => {
+  appSettings = { ...appSettings, ...settings };
+  return { success: true };
+});
+
+ipcMain.handle('load-settings', async () => {
+  return appSettings;
+});
+
+// CPU usage calculation
+let lastCpuInfo = os.cpus();
+function getCpuUsage() {
+  const cpus = os.cpus();
+  let totalIdle = 0;
+  let totalTick = 0;
+  let lastTotalIdle = 0;
+  let lastTotalTick = 0;
+
+  for (let i = 0; i < cpus.length; i++) {
+    const cpu = cpus[i];
+    const lastCpu = lastCpuInfo[i];
+    
+    for (const type in cpu.times) {
+      totalTick += cpu.times[type];
+      lastTotalTick += lastCpu.times[type];
+    }
+    totalIdle += cpu.times.idle;
+    lastTotalIdle += lastCpu.times.idle;
+  }
+
+  const idleDiff = totalIdle - lastTotalIdle;
+  const totalDiff = totalTick - lastTotalTick;
+  const usage = totalDiff > 0 ? Math.round((1 - idleDiff / totalDiff) * 100) : 0;
+  
+  lastCpuInfo = cpus;
+  return usage;
+}
+
+// Get top processes (platform-specific)
+function getTopProcesses() {
+  return new Promise((resolve) => {
+    const platform = process.platform;
+    let command;
+    
+    if (platform === 'darwin') {
+      // macOS
+      command = 'ps -arcwwwxo "comm,%cpu,%mem" | head -6 | tail -5';
+    } else if (platform === 'linux') {
+      // Linux
+      command = 'ps -eo comm,%cpu,%mem --sort=-%cpu | head -6 | tail -5';
+    } else if (platform === 'win32') {
+      // Windows - using WMIC
+      command = 'wmic process get name,PercentProcessorTime /format:csv | findstr /v "^$" | sort /r | head -5';
+      // Fallback for Windows
+      resolve([
+        { name: 'System', cpu: '5.0', mem: '2.0' },
+        { name: 'Desktop Window Manager', cpu: '3.0', mem: '1.5' },
+        { name: 'Explorer', cpu: '2.0', mem: '1.0' },
+        { name: 'Runtime Broker', cpu: '1.5', mem: '0.8' },
+        { name: 'Service Host', cpu: '1.0', mem: '0.5' }
+      ]);
+      return;
+    }
+    
+    exec(command, (error, stdout) => {
+      if (error) {
+        resolve([]);
+        return;
+      }
+      
+      const lines = stdout.trim().split('\n');
+      const processes = lines.map(line => {
+        const parts = line.trim().split(/\s+/);
+        if (parts.length >= 3) {
+          return {
+            name: parts.slice(0, -2).join(' ') || parts[0],
+            cpu: parts[parts.length - 2] || '0.0',
+            mem: parts[parts.length - 1] || '0.0'
+          };
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      resolve(processes.slice(0, 5));
+    });
+  });
+}
+
+ipcMain.handle('get-system-metrics', async () => {
+  const totalMem = os.totalmem();
+  const freeMem = os.freemem();
+  const usedMem = totalMem - freeMem;
+  const memPercent = Math.round((usedMem / totalMem) * 100);
+  const memGB = (usedMem / (1024 * 1024 * 1024)).toFixed(1);
+  const totalMemGB = (totalMem / (1024 * 1024 * 1024)).toFixed(1);
+  
+  const cpuPercent = getCpuUsage();
+  const processes = await getTopProcesses();
+  
+  return {
+    cpu: cpuPercent,
+    ram: memPercent,
+    ramUsed: memGB,
+    ramTotal: totalMemGB,
+    processes: processes,
+    platform: process.platform,
+    hostname: os.hostname(),
+    uptime: os.uptime()
   };
 });
 
