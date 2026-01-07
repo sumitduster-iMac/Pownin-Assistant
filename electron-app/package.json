@@ -35,7 +35,7 @@
     },
     "mac": {
       "category": "public.app-category.productivity",
-      "icon": "assets/icon.svg",
+      "icon": "assets/icons/icon-512.png",
       "target": [
         {
           "target": "dmg",
@@ -45,11 +45,11 @@
       "x64ArchFiles": "*"
     },
     "win": {
-      "icon": "assets/icon.svg",
+      "icon": "assets/icons/icon-256.png",
       "target": "nsis"
     },
     "linux": {
-      "icon": "assets/icon.svg",
+      "icon": "assets/icons",
       "target": "AppImage",
       "category": "Utility"
     },
