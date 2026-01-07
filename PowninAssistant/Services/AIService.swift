@@ -65,8 +65,8 @@ class AIService: ObservableObject {
     }
     
     private func generateResponse(for input: String, context: MessageContext) async -> String {
-        // Simulate network delay
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+        // Note: In a real application, this might involve API calls or heavier processing
+        // For now, processing is immediate since all logic is local
         
         let lowercasedInput = input.lowercased()
         

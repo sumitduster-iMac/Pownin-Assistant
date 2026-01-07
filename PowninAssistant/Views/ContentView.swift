@@ -66,6 +66,7 @@ struct ContentView: View {
 struct HeaderView: View {
     @State private var cpuUsage: Double = 0.0
     @State private var memoryUsage: Double = 0.0
+    @State private var timer: Timer?
     
     var body: some View {
         HStack {
@@ -89,14 +90,29 @@ struct HeaderView: View {
         .onAppear {
             startSystemMonitoring()
         }
+        .onDisappear {
+            stopSystemMonitoring()
+        }
     }
     
     private func startSystemMonitoring() {
-        Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
-            // Simulate real-time system data
-            cpuUsage = SystemMonitor.shared.getCPUUsage()
-            memoryUsage = SystemMonitor.shared.getMemoryUsage()
+        // Initial update
+        updateMetrics()
+        
+        // Schedule periodic updates
+        timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+            updateMetrics()
         }
+    }
+    
+    private func stopSystemMonitoring() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
+    private func updateMetrics() {
+        cpuUsage = SystemMonitor.shared.getCPUUsage()
+        memoryUsage = SystemMonitor.shared.getMemoryUsage()
     }
 }
 

@@ -28,7 +28,9 @@ class SystemMonitor {
         )
         
         guard result == KERN_SUCCESS, let cpuInfo = cpuInfo else {
-            return Double.random(in: 15...45) // Fallback to simulated data
+            // Return 0.0 if unable to get real metrics
+            print("Warning: Unable to retrieve CPU usage, returning 0.0")
+            return 0.0
         }
         
         var totalUsage: Double = 0
@@ -75,7 +77,9 @@ class SystemMonitor {
         }
         
         guard result == KERN_SUCCESS else {
-            return Double.random(in: 40...65) // Fallback to simulated data
+            // Return 0.0 if unable to get real metrics
+            print("Warning: Unable to retrieve memory usage, returning 0.0")
+            return 0.0
         }
         
         let pageSize = vm_kernel_page_size
@@ -88,6 +92,11 @@ class SystemMonitor {
         var totalMemory: UInt64 = 0
         var size = MemoryLayout<UInt64>.size
         sysctlbyname("hw.memsize", &totalMemory, &size, nil, 0)
+        
+        guard totalMemory > 0 else {
+            print("Warning: Unable to retrieve total memory, returning 0.0")
+            return 0.0
+        }
         
         let usedMemory = active + wired + compressed
         let memoryUsage = (usedMemory / Double(totalMemory)) * 100
