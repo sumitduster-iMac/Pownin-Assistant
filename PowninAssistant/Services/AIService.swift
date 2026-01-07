@@ -36,8 +36,8 @@ class AIService: ObservableObject {
         // Gather real-time context
         let context = await gatherContext()
         
-        // Generate AI response based on input and context
-        let response = await generateResponse(for: input, context: context)
+        // Generate AI response based on input and context (now synchronous)
+        let response = generateResponse(for: input, context: context)
         
         // Add AI response
         let aiMessage = Message(
@@ -64,9 +64,9 @@ class AIService: ObservableObject {
         return MessageContext(systemState: systemState, relevantData: relevantData)
     }
     
-    private func generateResponse(for input: String, context: MessageContext) async -> String {
-        // Note: In a real application, this might involve API calls or heavier processing
-        // For now, processing is immediate since all logic is local
+    private func generateResponse(for input: String, context: MessageContext) -> String {
+        // Note: Processing is synchronous since all logic is local
+        // If external API calls are added in the future, make this async again
         
         let lowercasedInput = input.lowercased()
         

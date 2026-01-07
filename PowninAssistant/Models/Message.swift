@@ -24,8 +24,8 @@ struct Message: Identifiable, Codable {
 }
 
 struct MessageContext: Codable {
-    var systemState: SystemState?
-    var relevantData: [String: String]?
+    let systemState: SystemState?
+    let relevantData: [String: String]?
     
     init(systemState: SystemState? = nil, relevantData: [String: String]? = nil) {
         self.systemState = systemState

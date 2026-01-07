@@ -100,8 +100,11 @@ struct HeaderView: View {
         updateMetrics()
         
         // Schedule periodic updates
-        timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
-            updateMetrics()
+        timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+            // Ensure UI updates happen on main thread
+            DispatchQueue.main.async {
+                self?.updateMetrics()
+            }
         }
     }
     
