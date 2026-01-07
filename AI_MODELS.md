@@ -129,7 +129,6 @@ export PERPLEXITY_API_KEY="your-api-key-here"
 ```bash
 export MISTRAL_API_KEY="your-api-key-here"
 ```
-```
 
 ### Running with API Keys
 
