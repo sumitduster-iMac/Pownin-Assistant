@@ -90,9 +90,16 @@ jobs:
       
     - name: Package application
       working-directory: electron-app
-      run: npm run package
+      run: |
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          npx electron-builder --mac --x64 --arm64
+        else
+          npm run package
+        fi
       shell: bash
       continue-on-error: true
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
     - name: Archive Electron build
       uses: actions/upload-artifact@v4
