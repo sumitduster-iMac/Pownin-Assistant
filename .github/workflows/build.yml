@@ -83,6 +83,48 @@ jobs:
     - name: Install dependencies
       working-directory: electron-app
       run: npm install
+
+    - name: Install icon generation tools (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+          brew install librsvg
+        fi
+      shell: bash
+
+    - name: Install icon generation tools (Windows)
+      if: runner.os == 'Windows'
+      run: choco install imagemagick -y
+      shell: powershell
+
+    - name: Generate PNG icons from SVG (Linux/macOS)
+      if: runner.os != 'Windows'
+      working-directory: electron-app
+      run: |
+        mkdir -p assets/icons
+        for size in 16 32 48 64 128 256 512 1024; do
+          rsvg-convert -w $size -h $size assets/icon.svg -o assets/icons/icon-${size}.png
+          echo "Generated ${size}x${size} icon"
+        done
+        echo "Generated icons:"
+        ls -la assets/icons/
+      shell: bash
+
+    - name: Generate PNG icons from SVG (Windows)
+      if: runner.os == 'Windows'
+      working-directory: electron-app
+      run: |
+        New-Item -ItemType Directory -Force -Path assets/icons
+        $sizes = @(16, 32, 48, 64, 128, 256, 512, 1024)
+        foreach ($size in $sizes) {
+          magick convert -background none -resize "${size}x${size}" assets/icon.svg "assets/icons/icon-${size}.png"
+          Write-Host "Generated ${size}x${size} icon"
+        }
+        Get-ChildItem assets/icons/
+      shell: powershell
       
     - name: Build Electron app
       working-directory: electron-app
