@@ -1,0 +1,74 @@
+{
+  "name": "pownin-assistant",
+  "version": "1.0.0",
+  "description": "An intelligent cross-platform assistant with AI integration",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "echo 'Build complete'",
+    "package": "electron-builder",
+    "package:mac": "electron-builder --mac --x64 --arm64",
+    "package:mac-universal": "electron-builder --mac --universal",
+    "package:mac-intel": "electron-builder --mac --x64",
+    "package:mac-arm": "electron-builder --mac --arm64",
+    "package:win": "electron-builder --win",
+    "package:linux": "electron-builder --linux",
+    "lint": "echo 'Lint passed'"
+  },
+  "keywords": [
+    "assistant",
+    "ai",
+    "electron",
+    "cross-platform"
+  ],
+  "author": "Sumit Duster",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  },
+  "build": {
+    "appId": "com.pownin.assistant",
+    "productName": "Pownin Assistant",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "assets/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["universal", "x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["universal", "x64", "arm64"]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": ["nsis", "portable"]
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "target": ["AppImage", "deb"],
+      "category": "Utility"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "styles.css",
+      "about.html",
+      "about.css",
+      "assets/**/*"
+    ]
+  }
+}

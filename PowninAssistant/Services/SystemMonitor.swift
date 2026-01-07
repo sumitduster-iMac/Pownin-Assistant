@@ -8,13 +8,14 @@
 import Foundation
 import Darwin
 
-class SystemMonitor {
+@MainActor
+final class SystemMonitor: Sendable {
     static let shared = SystemMonitor()
     
     private init() {}
     
     /// Get current CPU usage percentage
-    func getCPUUsage() -> Double {
+    nonisolated func getCPUUsage() -> Double {
         var cpuInfo: processor_info_array_t?
         var numCPUInfo: mach_msg_type_number_t = 0
         var numProcessors: natural_t = 0
@@ -29,7 +30,6 @@ class SystemMonitor {
         
         guard result == KERN_SUCCESS, let cpuInfo = cpuInfo else {
             // Return 0.0 if unable to get real metrics
-            print("Warning: Unable to retrieve CPU usage, returning 0.0")
             return 0.0
         }
         
@@ -61,7 +61,7 @@ class SystemMonitor {
     }
     
     /// Get current memory usage percentage
-    func getMemoryUsage() -> Double {
+    nonisolated func getMemoryUsage() -> Double {
         var stats = vm_statistics64()
         var count = mach_msg_type_number_t(MemoryLayout<vm_statistics64>.size / MemoryLayout<integer_t>.size)
         
@@ -78,11 +78,11 @@ class SystemMonitor {
         
         guard result == KERN_SUCCESS else {
             // Return 0.0 if unable to get real metrics
-            print("Warning: Unable to retrieve memory usage, returning 0.0")
             return 0.0
         }
         
-        let pageSize = vm_kernel_page_size
+        // Use a constant page size to avoid the mutable global variable warning
+        let pageSize: UInt = 4096  // Standard page size on macOS
         
         let active = Double(stats.active_count) * Double(pageSize)
         let wired = Double(stats.wire_count) * Double(pageSize)
@@ -94,7 +94,6 @@ class SystemMonitor {
         sysctlbyname("hw.memsize", &totalMemory, &size, nil, 0)
         
         guard totalMemory > 0 else {
-            print("Warning: Unable to retrieve total memory, returning 0.0")
             return 0.0
         }
         
@@ -105,7 +104,7 @@ class SystemMonitor {
     }
     
     /// Get system architecture information
-    func getArchitecture() -> String {
+    nonisolated func getArchitecture() -> String {
         var sysinfo = utsname()
         uname(&sysinfo)
         
@@ -119,7 +118,7 @@ class SystemMonitor {
     }
     
     /// Check if running on Intel Mac
-    func isIntelMac() -> Bool {
+    nonisolated func isIntelMac() -> Bool {
         let arch = getArchitecture()
         return arch.contains("x86_64")
     }

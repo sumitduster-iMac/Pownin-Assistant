@@ -1,153 +1,130 @@
 # Pownin-Assistant
 
-An intelligent macOS assistant application with AI integration and real-time system monitoring capabilities, optimized for Intel Mac architecture.
+An intelligent cross-platform assistant with AI integration and real-time system monitoring. Available as both a native macOS Swift app and an Electron cross-platform app.
 
 ## Features
 
 ### 🎨 Modern UI
-- Clean, native macOS interface built with SwiftUI
-- Real-time system status display (CPU and Memory usage)
-- Interactive chat interface with AI assistant
-- Animated status indicators
-- Dark mode support
+- Clean, native interface with sidebar navigation
+- Real-time system status display (CPU and Memory)
+- Interactive chat with AI assistant
+- Animated status indicators and dark mode support
 
 ### 🤖 AI Integration
-- **Multiple AI Models**: Support for 8 AI providers including OpenAI GPT, Anthropic Claude, xAI Grok, GitHub Copilot, Google Gemini, Perplexity AI, Mistral AI, and Local AI
-- **Automatic Fallback**: Intelligently switches between providers based on availability
-- **Dynamic Response System**: Context-aware AI responses based on real-time data
-- **Context Analysis**: Intelligent conversation analysis to understand user intent
-- **Real-time Data Processing**: Integrates live system metrics into responses
-- **Conversation History**: Maintains context across multiple interactions
+- **8 AI Providers**: OpenAI GPT, Anthropic Claude, xAI Grok, GitHub Copilot, Google Gemini, Perplexity, Mistral, Local AI
+- **Automatic Fallback**: Switches providers based on availability
+- **Context-Aware**: Uses real-time system metrics in responses
 
-### 💻 Intel Mac Compatibility
-- Optimized for Intel x86_64 architecture
-- Native system monitoring for Intel-based Macs
-- CPU and memory usage tracking
-- Architecture detection and reporting
+### 💻 Cross-Platform
+- **Swift**: Native macOS Universal app (Intel x86_64 + Apple Silicon arm64)
+- **Electron**: Cross-platform support for macOS (Universal), Windows, Linux
 
-### 🔧 System Monitoring
-- Real-time CPU usage monitoring
-- Memory usage tracking
-- System architecture detection
-- Performance metrics integration
+### 🚀 Railway Integration
+- Monitor Railway deployments
+- Trigger deploys from the app
+- View project status and logs
 
-## Architecture
+## Quick Start
 
-The application is structured with clean separation of concerns:
-
-```
-PowninAssistant/
-├── PowninAssistantApp.swift    # Application entry point
-├── Views/
-│   └── ContentView.swift        # Main UI components
-├── Models/
-│   └── Message.swift            # Data models
-└── Services/
-    ├── AIService.swift          # AI integration and response generation
-    ├── AIModelProvider.swift    # AI model provider protocol
-    ├── OpenAIProvider.swift     # OpenAI GPT integration
-    ├── AnthropicProvider.swift  # Anthropic Claude integration
-    ├── GrokProvider.swift       # xAI Grok integration
-    ├── CopilotProvider.swift    # GitHub Copilot integration
-    ├── GeminiProvider.swift     # Google Gemini integration
-    ├── PerplexityProvider.swift # Perplexity AI integration
-    ├── MistralProvider.swift    # Mistral AI integration
-    ├── LocalAIProvider.swift    # Local rule-based AI (fallback)
-    ├── SystemMonitor.swift      # Real-time system monitoring
-    └── ContextAnalyzer.swift    # Context analysis for AI
-```
-
-## Requirements
-
-- macOS 13.0 or later
-- Intel Mac (x86_64 architecture)
-- Xcode 14.0 or later
-- Swift 5.9 or later
-- (Optional) API keys for any of the 7 supported AI providers
-
-## AI Model Setup
-
-Pownin Assistant supports 8 AI model providers. See [AI_MODELS.md](AI_MODELS.md) for detailed configuration.
-
-### Quick Setup
+### Swift macOS App (Universal Binary)
 
 ```bash
-# Configure any or all of these AI providers:
-export OPENAI_API_KEY="your-openai-key"
-export ANTHROPIC_API_KEY="your-anthropic-key"
-export XAI_API_KEY="your-xai-key"
-export GITHUB_TOKEN="your-github-token"
-export GEMINI_API_KEY="your-gemini-key"
-export PERPLEXITY_API_KEY="your-perplexity-key"
-export MISTRAL_API_KEY="your-mistral-key"
+# Build Universal binary (Intel + Apple Silicon)
+make build-universal
+
+# Or build for specific architecture
+make build-intel    # Intel only
+make build-arm      # Apple Silicon only
 
 # Run the application
 swift run
 ```
 
-The application works without API keys using the local AI fallback.
-
-## Building
-
-### Using Swift Package Manager
+### Electron App
 
 ```bash
-cd PowninAssistant
-swift build -c release --arch x86_64
+cd electron-app
+npm install
+npm start
 ```
 
-### Running
+See [QUICK_START.md](QUICK_START.md) for detailed instructions.
+
+## Architecture
+
+```
+PowninAssistant/           # Swift macOS app
+├── Views/
+│   ├── ContentView.swift  # Main UI with sidebar
+│   ├── WebView.swift      # Web content display
+│   └── RailwayApp.swift   # Railway integration
+├── Services/
+│   ├── AIService.swift    # AI orchestration
+│   └── SystemMonitor.swift
+└── Models/
+
+electron-app/              # Cross-platform Electron app
+├── main.js
+├── index.html
+├── styles.css
+└── package.json
+```
+
+## AI Model Setup
+
+Configure any or all providers (see [AI_MODELS.md](AI_MODELS.md)):
 
 ```bash
-swift run
+export OPENAI_API_KEY="your-key"
+export ANTHROPIC_API_KEY="your-key"
 ```
 
-## AI Capabilities
+Works without API keys using local AI fallback.
 
-The AI assistant provides:
+## Requirements
 
-1. **Real-time System Insights**: Queries about CPU and memory usage are answered with current data
-2. **Context-Aware Responses**: The AI considers conversation history and system state
-3. **Dynamic Intelligence**: Responses adapt based on real-time system metrics
-4. **Natural Language Understanding**: Recognizes user intent and provides relevant information
+- **Swift App**: macOS 13.0+, Xcode 14+, Swift 5.9+ (Universal: Intel & Apple Silicon)
+- **Electron App**: Node.js 18+, npm 9+ (Universal macOS, Windows, Linux)
 
-### Example Interactions
+## Development
 
-- "What's my CPU usage?" → Provides current CPU percentage with contextual advice
-- "Check system status" → Comprehensive system overview with metrics
-- "Tell me about memory" → Memory usage analysis with recommendations
-- "Help" → Lists available capabilities and features
+### Build Swift App (Universal)
+```bash
+# Universal binary (recommended)
+make build-universal
 
-## CI/CD Workflow
+# Individual architectures
+make build-intel      # Intel x86_64
+make build-arm        # Apple Silicon arm64
 
-The project includes a GitHub Actions workflow that:
+# Verify universal binary
+make check-arch
+```
 
-1. **Builds** the application for Intel Mac architecture
-2. **Verifies** AI integration components
-3. **Tests** system monitoring capabilities
-4. **Packages** distribution builds for release
+### Build Electron App
+```bash
+cd electron-app
+npm install
+npm run build
+npm run package
+```
 
-## Technical Details
+### Generate App Icons
+```bash
+swift scripts/generate_app_icons.swift source-icon.png ./output
+node scripts/generate-icons.mjs
+```
 
-### Intel Mac Optimization
+## CI/CD
 
-The application is specifically built for Intel Mac compatibility:
-- Uses x86_64 architecture flags in build process
-- Native system calls optimized for Intel processors
-- Direct access to Intel-specific CPU metrics
-- Memory management tuned for Intel architecture
-
-### AI Integration Workflow
-
-1. **Input Processing**: User messages are captured and stored
-2. **Context Gathering**: Real-time system data and conversation history collected
-3. **Intent Analysis**: ContextAnalyzer determines user intent and extracts keywords
-4. **Response Generation**: AI generates context-aware, data-driven responses
-5. **Display**: Formatted response shown with timestamp and context
+GitHub Actions workflows for:
+- Swift build and test on Intel Mac
+- Electron builds for all platforms
+- Security audits and linting
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License - see [LICENSE](LICENSE)
 
 ## Author
 
@@ -155,4 +132,4 @@ Sumit Duster
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions welcome! Please submit a Pull Request.
