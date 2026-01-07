@@ -10,7 +10,7 @@ on:
 jobs:
   build-intel-mac:
     name: Build for Intel Mac
-    runs-on: macos-13
+    runs-on: macos-15-intel
     
     steps:
     - name: Checkout code
@@ -49,7 +49,7 @@ jobs:
 
   ai-integration-check:
     name: Verify AI Integration
-    runs-on: macos-13
+    runs-on: macos-15-intel
     needs: build-intel-mac
     
     steps:
@@ -94,7 +94,7 @@ jobs:
 
   deployment:
     name: Package for Distribution
-    runs-on: macos-13
+    runs-on: macos-15-intel
     needs: [build-intel-mac, ai-integration-check]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
