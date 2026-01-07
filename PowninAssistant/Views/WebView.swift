@@ -17,8 +17,7 @@ struct WebView: NSViewRepresentable {
     
     func makeNSView(context: Context) -> WKWebView {
         let configuration = WKWebViewConfiguration()
-        configuration.preferences.javaScriptEnabled = true
-        configuration.preferences.javaScriptCanOpenWindowsAutomatically = false
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator

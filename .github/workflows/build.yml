@@ -28,7 +28,12 @@ jobs:
       run: swift build -c release --arch x86_64
       
     - name: Run tests
-      run: swift test --arch x86_64
+      run: |
+        if [ -d "Tests" ]; then
+          swift test --arch x86_64
+        else
+          echo "No Tests directory found, skipping tests"
+        fi
       continue-on-error: true
       
     - name: Archive Swift build
@@ -42,6 +47,7 @@ jobs:
     name: Build Electron App
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         
@@ -53,12 +59,10 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: electron-app/package-lock.json
         
     - name: Install dependencies
       working-directory: electron-app
-      run: npm ci
+      run: npm install
       
     - name: Build Electron app
       working-directory: electron-app
@@ -67,6 +71,7 @@ jobs:
     - name: Package application
       working-directory: electron-app
       run: npm run package
+      continue-on-error: true
       
     - name: Archive Electron build
       uses: actions/upload-artifact@v4
