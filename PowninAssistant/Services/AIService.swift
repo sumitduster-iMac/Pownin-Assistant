@@ -24,7 +24,7 @@ class AIService: ObservableObject {
         // Initialize all AI model providers
         setupProviders()
         
-        // Add welcome message
+        // Add welcome message with current provider info
         let welcomeMessage = Message(
             content: """
             Hello! I'm Pownin Assistant, your intelligent macOS companion powered by \(currentProvider).

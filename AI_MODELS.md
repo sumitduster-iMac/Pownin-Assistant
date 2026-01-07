@@ -181,13 +181,15 @@ Try these queries to test different providers:
 
 ## API Costs
 
-### OpenAI Pricing (as of 2024)
+### OpenAI Pricing (approximate, check current rates)
 - GPT-3.5-turbo: ~$0.002 per 1K tokens
 - GPT-4: ~$0.03 per 1K tokens (input)
 
-### Anthropic Pricing (as of 2024)
+### Anthropic Pricing (approximate, check current rates)
 - Claude 3 Haiku: ~$0.0003 per 1K tokens
 - Claude 3 Sonnet: ~$0.003 per 1K tokens
+
+**Note:** Pricing may change. Check provider websites for current rates.
 
 ### Cost Estimation
 

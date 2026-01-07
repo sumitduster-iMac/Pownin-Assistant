@@ -14,7 +14,10 @@ class OpenAIProvider: AIModelProvider {
     private let baseURL = "https://api.openai.com/v1/chat/completions"
     
     var isAvailable: Bool {
-        return apiKey != nil && !apiKey!.isEmpty
+        guard let key = apiKey, !key.isEmpty else {
+            return false
+        }
+        return true
     }
     
     init(apiKey: String? = nil, model: String = "gpt-3.5-turbo") {

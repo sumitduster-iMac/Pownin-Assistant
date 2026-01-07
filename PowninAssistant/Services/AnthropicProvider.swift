@@ -14,7 +14,10 @@ class AnthropicProvider: AIModelProvider {
     private let baseURL = "https://api.anthropic.com/v1/messages"
     
     var isAvailable: Bool {
-        return apiKey != nil && !apiKey!.isEmpty
+        guard let key = apiKey, !key.isEmpty else {
+            return false
+        }
+        return true
     }
     
     init(apiKey: String? = nil, model: String = "claude-3-haiku-20240307") {
